@@ -1,0 +1,238 @@
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+font-family: 'Quicksand', sans-serif;
+}
+
+/* BACKGROUND */
+
+body{
+height:100vh;
+display:flex;
+justify-content:center;
+align-items:center;
+
+background: linear-gradient(
+90deg,
+#c08aa8,
+#d2b5cc,
+#c7b8cf,
+#1a1f3b
+);
+}
+
+
+/* MAIN CONTAINER */
+
+.back-home{
+position:absolute;
+top:30px;
+left:40px;
+
+display:flex;
+align-items:center;
+gap:8px;
+
+text-decoration:none;
+font-size:15px;
+font-weight:500;
+
+color:#ffffff;
+
+transition:0.2s;
+}
+
+.back-home:hover{
+opacity:0.7;
+}
+
+.container{
+display:flex;
+align-items:center;
+gap:80px;
+}
+
+
+/* FORM CARD */
+
+.form-card{
+    width:420px;
+    padding:60px;
+
+    border-radius:25px;
+
+    background:rgba(255,255,255,0.2);
+
+
+    -webkit-backdrop-filter: blur(10px); /* Safari support */
+    backdrop-filter: blur(10px);
+
+    border:1px solid rgba(255,255,255,0.3);
+}
+
+
+/* TITLE */
+
+.form-card h2{
+text-align:center;
+margin-bottom:40px;
+font-size:28px;
+color:#5c4b60;
+}
+
+
+/* INPUT */
+
+.input-box{
+position:relative;
+margin-bottom:25px;
+}
+
+.input-box input{
+
+width:100%;
+padding:10px 35px 10px 0;
+
+border:none;
+border-bottom:2px solid #333;
+
+background:transparent;
+outline:none;
+
+font-size:15px;
+}
+
+
+.input-box i{
+position:absolute;
+right:0;
+top:50%;
+transform:translateY(-50%);
+color:#000;
+}
+
+
+/* BUTTON */
+
+.signup-btn{
+
+width:100%;
+padding:14px;
+
+border:none;
+border-radius:30px;
+
+margin-top:10px;
+
+font-size:16px;
+font-weight:600;
+
+color:white;
+
+cursor:pointer;
+
+background:linear-gradient(
+180deg,
+#8f5a8c,
+#1c2040
+);
+
+transition:0.3s;
+}
+
+.signup-btn:hover{
+transform:scale(1.03);
+}
+
+
+/* TEXT */
+
+.login-text{
+margin-top:25px;
+text-align:center;
+color:#333;
+font-size:14px;
+}
+
+
+/* IMAGE */
+
+.image-box{
+
+width:420px;
+height:420px;
+
+background:#0b0e27;
+
+border-radius:40px;
+
+display:flex;
+align-items:center;
+justify-content:center;
+
+box-shadow:0 20px 40px rgba(0,0,0,0.4);
+overflow: hidden;
+}
+
+.image-box img{
+width:100%;
+height: 100%;
+object-fit: cover;
+}
+
+.forgot-password{
+   text-align: center;
+   margin-top: 10px;
+   font-size: 12px;
+}
+
+/* LOGIN PAGE BACK BUTTON */
+.login-page .back-button {
+    background: white;
+    border: 2px solid #c46b6b;
+    color: #c46b6b;
+    padding: 10px 25px;
+    border-radius: 40px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    margin: 20px 0 10px 40px;
+    transition: all 0.3s ease;
+    font-family: 'Quicksand', sans-serif;
+    box-shadow: 0 4px 10px rgba(196, 107, 107, 0.1);
+    position: relative;
+    overflow: hidden;
+    text-decoration: none;
+}
+
+.login-page .back-button i {
+    font-size: 16px;
+    transition: transform 0.3s ease;
+}
+
+.login-page .back-button:hover {
+    background: #c46b6b;
+    color: white;
+    transform: translateX(-5px);
+    box-shadow: 0 6px 15px rgba(196, 107, 107, 0.3);
+}
+
+.login-page .back-button:hover i {
+    transform: translateX(-3px);
+}
+
+.login-page .back-button:active {
+    transform: scale(0.95);
+}
+
+@media (max-width: 768px) {
+    .login-page .back-button {
+        margin: 15px 0 5px 20px;
+        padding: 8px 20px;
+        font-size: 14px;
+    }
+}

@@ -1,0 +1,129 @@
+/* SIMPLE REGISTER PAGE CSS - NO CONFLICTS */
+.register-page {
+    font-family: 'Quicksand', sans-serif;
+    background: linear-gradient(135deg, #fdf6f6 0%, #FFECF2 100%);
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    position: relative;
+}
+
+.register-page .back-home {
+    position: absolute;
+    top: 30px;
+    left: 30px;
+    text-decoration: none;
+    color: #c46b6b;
+    font-weight: 500;
+    z-index: 10;
+}
+
+.register-page .back-home i {
+    margin-right: 5px;
+}
+
+.register-page .container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+}
+
+.register-page .form-card {
+    background: white;
+    padding: 40px;
+    border-radius: 20px;
+    box-shadow: 0 10px 30px rgba(196, 107, 107, 0.2);
+    width: 100%;
+    max-width: 400px;
+}
+
+.register-page h2 {
+    text-align: center;
+    color: #333;
+    margin-bottom: 30px;
+    font-size: 28px;
+}
+
+.register-page .input-box {
+    position: relative;
+    margin-bottom: 20px;
+}
+
+.register-page .input-box input {
+    width: 100%;
+    padding: 12px 40px 12px 15px;
+    border: 1px solid #e0e0e0;
+    border-radius: 10px;
+    font-size: 14px;
+    outline: none;
+}
+
+.register-page .input-box input:focus {
+    border-color: #c46b6b;
+}
+
+.register-page .input-box i {
+    position: absolute;
+    right: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #c46b6b;
+}
+
+.register-page .signup-btn {
+    width: 100%;
+    padding: 12px;
+    background: #c46b6b;
+    color: white;
+    border: none;
+    border-radius: 10px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    margin-top: 10px;
+}
+
+.register-page .signup-btn:hover {
+    background: #a85555;
+}
+
+.register-page .login-text {
+    text-align: center;
+    margin-top: 20px;
+    color: #666;
+}
+
+.register-page .login-text a {
+    color: #c46b6b;
+    text-decoration: none;
+    font-weight: 600;
+    margin-left: 5px;
+}
+
+.register-page .image-box {
+    display: none;
+}
+
+@media (min-width: 992px) {
+    .register-page .container {
+        justify-content: space-between;
+        max-width: 1000px;
+    }
+    
+    .register-page .form-card {
+        margin-right: 50px;
+    }
+    
+    .register-page .image-box {
+        display: block;
+        flex: 1;
+    }
+    
+    .register-page .image-box img {
+        width: 100%;
+        max-width: 400px;
+    }
+}
