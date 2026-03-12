@@ -267,7 +267,7 @@ function LandingPage() {
           {/* TESTIMONIAL 1 */}
           <div className="testimonial-card">
             <span className="quote">“</span>
-            <p>The cake was absolutely beautiful and delicious! SweetOrder made our wedding day even more special.</p>
+            <p>Ordering a cake was so easy! The website was simple to use, and the cake arrived exactly as I requested. It looked beautiful and tasted even better. My daughter absolutely loved it!</p>
             <div className="testimonial-user">
               <img src="/assets/account.png" alt="customer" />
               <div>
@@ -280,12 +280,12 @@ function LandingPage() {
           {/* TESTIMONIAL 2 */}
           <div className="testimonial-card">
             <span className="quote">“</span>
-            <p>The cake was absolutely beautiful and delicious! SweetOrder made our wedding day even more special.</p>
+            <p>The cake was absolutely beautiful and delicious! SweetOrder made our wedding day even more special. The customization options were great and everything arrived on time.</p>
             <div className="testimonial-user">
               <img src="/assets/account.png" alt="customer" />
               <div>
-                <h4>Maria Santos</h4>
-                <p>@mariasweets</p>
+                <h4>Daniel Cruz</h4>
+                <p>@danielcelebrates</p>
               </div>
             </div>
           </div>
@@ -293,12 +293,12 @@ function LandingPage() {
           {/*TESTIMONIAL 3*/}
           <div className="testimonial-card">
             <span className="quote">“</span>
-            <p>The cake was absolutely beautiful and delicious! SweetOrder made our wedding day even more special.</p>
+            <p>I've ordered multiple cakes for birthdays and family events, and every time the quality is amazing. The designs are stunning and the flavors are incredible!</p>
             <div className="testimonial-user">
               <img src="/assets/account.png" alt="customer" />
               <div>
-                <h4>Maria Santos</h4>
-                <p>@mariasweets</p>
+                <h4>Aisha Khan</h4>
+                <p>@aishabakesfan</p>
               </div>
             </div>
           </div>
@@ -385,9 +385,9 @@ function LandingPage() {
           {/* CONTACT */}
           <div className="footer-contact">
             <h4>Contact</h4>
-            <p>Email: sweetorder@email.com</p>
+            <p>Email: sweetorder@gmail.com</p>
             <p>Phone: +63 912 345 6789</p>
-            <p>Location: Manila, Philippines</p>
+            <p>Location: Cagayan de Oro, Philippines</p>
           </div>
         </div>
 
