@@ -33,14 +33,15 @@ opacity:1;
 /*NAVIGATION BAR*/
 
 .logo-img{
-    width:80px;
-    height: 80px;
+    width:70px;
+   
 }
 
 .navbar{
-    background:#deb9c3;
+    background:#FFECF2;
     padding:40px 40px;
-    height: 89px;
+    height: 90px;
+    align-items: center;
     position: fixed;
     top: 0;
     left: 0;
@@ -62,7 +63,6 @@ opacity:1;
 }
 
 .nav-links a{
-    font-size: 14px;
     margin:0 20px;
     text-decoration:none;
     color:#333;
@@ -74,6 +74,9 @@ opacity:1;
     color:#333;
     padding-bottom:4px;
     transition:0.3s;
+}
+.nav-links a:hover{
+color:#c46b6b;
 }
 
 .nav-link.active{
@@ -88,8 +91,7 @@ opacity:1;
 }
 
 .cart-icon{
-    width:20px;
-    height: 20px;
+    width:22px;
 }
 
 .login-button{
@@ -221,28 +223,28 @@ opacity:1;
 /* ABOUT SECTION */
 
 .about-section{
-padding:60px 20px;
-background:#fdf6f6;
-scroll-margin-top: 100px;
+    padding:120px 10px;
+    background:#fdf6f6;
+    scroll-margin-top:-10px;
 }
 
 .about-container{
-max-width:1100px;
-margin:0 auto;
-display:flex;
-align-items:center;
-gap:40px;
-flex-wrap: wrap;
+    max-width:1100px;
+    margin:0 auto;
+    display:flex;
+    align-items:center;
+    gap:40px;
+    flex-wrap: wrap;
 }
 
 .about-img{
-flex: 1;
-min-width: 300px;
+    flex: 1;
+    min-width: 300px;
 }
 
 .about-img img{
-width:100%;
-border-radius:10px;
+    width:100%;
+    border-radius:10px;
 }
 
 .about-content{
