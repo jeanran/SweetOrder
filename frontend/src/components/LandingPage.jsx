@@ -96,7 +96,7 @@ function LandingPage() {
           </nav>
 
           <div className="nav-right">
-            <Link to="/cart"><img className="cart-icon" src="/assets/cart.png" alt="cart icon" /></Link>
+            <Link to="/login"><img className="cart-icon" src="/assets/cart.png" alt="cart icon" /></Link>
             <Link to="/login"><button className="login-button">Log In</button></Link>
           </div>
         </div>

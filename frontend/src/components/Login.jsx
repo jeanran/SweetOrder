@@ -43,14 +43,14 @@ function Login() {
               <i className="fa-solid fa-lock"></i>
             </div>
             
-            <button type="submit" className="signup-btn">Login</button>
+            <Link to="/Homepage"><button type="submit" className="signup-btn">Login</button></Link>
 
             <Link to="/register">
               <p className="login-text">Don't have an account?</p>
             </Link>
-            <Link to="/forgot-password">
+            
               <p className="forgot-password">Forgot Password?</p>
-            </Link>
+          
           </form>
         </div>
 

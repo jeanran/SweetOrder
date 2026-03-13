@@ -132,11 +132,9 @@ color:white;
 
 cursor:pointer;
 
-background:linear-gradient(
-180deg,
-#8f5a8c,
-#1c2040
-);
+background:
+#c46b6b
+;
 
 transition:0.3s;
 }

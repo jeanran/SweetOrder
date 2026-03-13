@@ -73,7 +73,7 @@ function Checkout() {
     e.preventDefault();
     console.log('Order placed:', { formData, cartItems, total });
     alert('Order placed successfully!');
-    navigate('/');
+    navigate('/products');
   };
 
   const goBack = () => {
