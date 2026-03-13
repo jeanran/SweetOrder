@@ -62,8 +62,8 @@ return (
               weddings, and special occasions.
             </p>
             <div className="hero-buttons">
-              <Link to="/login"><button className="order-btn">Order Now</button></Link>
-              <a href="#best-sellers"><button className="view-btn">View Cakes</button></a>
+              <Link to="/products"><button className="order-btn">Order Now</button></Link>
+              <Link to="/products"><a><button className="view-btn">View Cakes</button></a></Link>
             </div>
           </div>
 
