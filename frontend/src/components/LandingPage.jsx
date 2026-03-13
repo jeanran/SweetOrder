@@ -97,7 +97,10 @@ function LandingPage() {
 
           <div className="nav-right">
             <Link to="/login"><img className="cart-icon" src="/assets/cart.png" alt="cart icon" /></Link>
-            <Link to="/login"><button className="login-button">Log In</button></Link>
+            <Link to="/login"><button className="login-button" onClick={() => {localStorage.removeItem('user');localStorage.removeItem('token'); }}>Log In</button></Link>
+  
+    
+
           </div>
         </div>
       </header>

@@ -1,13 +1,13 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
-from .views import CakeViewSet, CustomerViewSet, OrderViewSet
+from . import views
 
 router = DefaultRouter()
-router.register('cakes', CakeViewSet)
-router.register('customers', CustomerViewSet)
-router.register('orders', OrderViewSet)
+router.register(r'products', views.ProductViewSet)
 
 urlpatterns = [
+    path('register/', views.register, name='register'),
+    path('login/', views.login, name='login'),
+    path('logout/', views.logout, name='logout'),
     path('', include(router.urls)),
 ]
-

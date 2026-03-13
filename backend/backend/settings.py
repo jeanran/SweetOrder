@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'corsheaders',
     'base',
+    
 
 ]
 
@@ -85,14 +86,14 @@ WSGI_APPLICATION = 'backend.wsgi.application'
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
 DATABASES = {
- 'default': {
-  'ENGINE': 'django.db.backends.mysql',
-  'NAME': 'databasePIT',
-  'USER': 'root',
-  'PASSWORD': '',
-  'HOST': 'localhost',
-  'PORT': '3306',
- }
+    'default': {
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': 'sweetorder_db',
+        'USER': 'root',
+        'PASSWORD': '',
+        'HOST': 'localhost',
+        'PORT': '3306',
+    }
 }
 
 

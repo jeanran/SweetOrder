@@ -1,60 +1,166 @@
-import React, { useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
+import api from '../services/api';
 import '../styles/login.css';
 
 function Login() {
   const navigate = useNavigate();
+  const location = useLocation();
+  const [formData, setFormData] = useState({
+    email: location.state?.email || '',
+    password: ''
+  });
+  const [error, setError] = useState('');
+  const [successMessage, setSuccessMessage] = useState(location.state?.message || '');
+  const [loading, setLoading] = useState(false);
 
+  // Check if user is already logged in
   useEffect(() => {
-    document.body.classList.add('page-loaded');
-    return () => {
-      document.body.classList.remove('page-loaded');
-    };
-  }, []);
+  document.body.classList.add('page-loaded');
 
-  const goBack = () => {
-    navigate(-1);
+  const user = localStorage.getItem('user');
+  const token = localStorage.getItem('token');
+  if (user && token) {
+    try {
+      const userData = JSON.parse(user);
+      // Only redirect if userData is valid and has a role
+      if (userData?.role) {
+        navigate('/homepage', { replace: true });
+      }
+    } catch (err) {
+      console.error('Error parsing user from localStorage', err);
+      // Stay on login page if parsing fails
+    }
+  }
+
+  return () => {
+    document.body.classList.remove('page-loaded');
+  };
+}, [navigate]);
+
+    
+
+  const handleChange = (e) => {
+    setFormData(prev => ({
+      ...prev,
+      [e.target.name]: e.target.value
+    }));
+    setError('');
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setError('');
+    setLoading(true);
+
+    try {
+      const response = await api.post('/login/', {
+        email: formData.email,
+        password: formData.password
+      });
+
+      if (response.status === 200 && response.data.user) {
+        // Store user data
+        localStorage.setItem('user', JSON.stringify(response.data.user));
+        localStorage.setItem('token', response.data.token || 'dummy-token');
+
+        // Navigate after login
+        navigate('/homepage', { replace: true });
+      }
+    } catch (err) {
+      console.error('Login error:', err);
+
+      if (err.response) {
+        const status = err.response.status;
+        const serverError = err.response.data?.error;
+
+        if (status === 401) setError('Invalid email or password');
+        else if (status === 404) setError('User not found');
+        else if (serverError) setError(serverError);
+        else setError('Login failed. Please try again.');
+      } else if (err.request) {
+        setError('Cannot connect to server. Make sure Django is running.');
+      } else {
+        setError('An unexpected error occurred. Please try again.');
+      }
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
     <div className="login-page">
-      {/* Back Button */}
-      <button className="back-button" onClick={goBack}>
-        <i className="fa-solid fa-arrow-left"></i> Back
-      </button>
-
       <Link to="/" className="back-home">
-        <i className="fa-solid fa-arrow-left"></i>
-        Back to Home
+        <i className="fa-solid fa-arrow-left"></i> Back to Home
       </Link>
-      
+
       <div className="container">
-        {/* FORM CARD */}
         <div className="form-card">
-          <form>
+          <form onSubmit={handleSubmit}>
             <h2>Login to your account</h2>
 
+            {successMessage && (
+              <div className="alert success-alert">
+                <i className="fa-solid fa-check-circle"></i> {successMessage}
+              </div>
+            )}
+
+            {error && (
+              <div className="alert error-alert">
+                <i className="fa-solid fa-exclamation-circle"></i> {error}
+              </div>
+            )}
+
             <div className="input-box">
-              <input type="email" name="email" placeholder="Email" required />
+              <input
+                type="email"
+                name="email"
+                placeholder="Email"
+                value={formData.email}
+                onChange={handleChange}
+                required
+                disabled={loading}
+              />
               <i className="fa-solid fa-envelope"></i>
             </div>
+
             <div className="input-box">
-              <input type="password" name="password" placeholder="Password" required />
+              <input
+                type="password"
+                name="password"
+                placeholder="Password"
+                value={formData.password}
+                onChange={handleChange}
+                required
+                disabled={loading}
+              />
               <i className="fa-solid fa-lock"></i>
             </div>
-            
-            <Link to="/Homepage"><button type="submit" className="signup-btn">Login</button></Link>
 
-            <Link to="/register">
-              <p className="login-text">Don't have an account?</p>
-            </Link>
-            
-              <p className="forgot-password">Forgot Password?</p>
-          
+            <button
+              type="submit"
+              className="signup-btn"
+              disabled={loading}
+              style={{
+                opacity: loading ? 0.7 : 1,
+                cursor: loading ? 'not-allowed' : 'pointer'
+              }}
+            >
+              {loading ? (
+                <>
+                  <i className="fa-solid fa-spinner fa-spin"></i> Logging in...
+                </>
+              ) : (
+                'Login'
+              )}
+            </button>
+
+            <p className="login-text">
+              Don't have an account? <Link to="/register">Register</Link>
+            </p>
           </form>
         </div>
 
-        {/* SIDE LOGO IMAGE */}
         <div className="image-box">
           <img src="/assets/lgo.png" alt="Logo" />
         </div>
