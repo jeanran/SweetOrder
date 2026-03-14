@@ -25,7 +25,11 @@ function Login() {
       const userData = JSON.parse(user);
       // Only redirect if userData is valid and has a role
       if (userData?.role) {
-        navigate('/homepage', { replace: true });
+        if (userData.role === 'admin') {
+          navigate('/admin', { replace: true });
+        } else {
+          navigate('/homepage', { replace: true });
+        }
       }
     } catch (err) {
       console.error('Error parsing user from localStorage', err);
@@ -64,8 +68,13 @@ function Login() {
         localStorage.setItem('user', JSON.stringify(response.data.user));
         localStorage.setItem('token', response.data.token || 'dummy-token');
 
-        // Navigate after login
-        navigate('/homepage', { replace: true });
+        // Navigate based on role
+        const userRole = response.data.user.role;
+        if (userRole === 'admin') {
+          navigate('/admin', { replace: true });
+        } else {
+          navigate('/homepage', { replace: true });
+        }
       }
     } catch (err) {
       console.error('Login error:', err);
