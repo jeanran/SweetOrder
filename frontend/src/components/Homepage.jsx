@@ -15,7 +15,14 @@ function Homepage() {
 
     // ✅ load user from localStorage
     const stored = localStorage.getItem('user');
-    if (stored) setUser(JSON.parse(stored));
+    if (stored) {
+      const parsedUser = JSON.parse(stored);
+      setUser(parsedUser);
+      // ensure userId is also stored
+      if (!localStorage.getItem('userId')) {
+        localStorage.setItem('userId', parsedUser.user_id);
+      }
+    }
 
     const handleScroll = () => setScrolled(window.scrollY > 50);
     window.addEventListener('scroll', handleScroll);
@@ -37,12 +44,14 @@ function Homepage() {
 
   const handleLogout = async () => {
     try {
-      await api.post('/auth/logout/');
+      await api.post('/auth/logout/', {}, { withCredentials: true });
     } catch (err) {
       console.error('Logout error:', err);
     } finally {
       localStorage.removeItem('user');
       localStorage.removeItem('userId');
+      setUser(null); // ✅ clear user state
+      setDropdownOpen(false);
       navigate('/login');
     }
   };
@@ -69,11 +78,11 @@ function Homepage() {
           </div>
 
           <nav className="nav-links">
-            <Link to="/homepage"     className="nav-link">Home</Link>
-            <Link to="/about"        className="nav-link">About</Link>
-            <Link to="/products"     className="nav-link">Cakes</Link>
+            <Link to="/homepage" className="nav-link">Home</Link>
+            <Link to="/about" className="nav-link">About</Link>
+            <Link to="/products" className="nav-link">Cakes</Link>
             <Link to="/testimonials" className="nav-link">Testimonials</Link>
-            <Link to="/contacts"     className="nav-link">Contacts</Link>
+            <Link to="/contacts" className="nav-link">Contacts</Link>
           </nav>
 
           <div className="nav-right">

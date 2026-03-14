@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';  // ✅ add Link
 import api from '../services/api';
 
 function Profile() {
@@ -10,15 +10,18 @@ function Profile() {
   const [error, setError]     = useState('');
 
   const [formData, setFormData] = useState({
-    name:     '',
-    email:    '',
-    password: '',
+    name:             '',
+    email:            '',
+    password:         '',
     confirm_password: ''
   });
 
   useEffect(() => {
+    document.body.classList.add('page-loaded');    // ✅ FIX: was missing
+
     const stored = localStorage.getItem('user');
     if (!stored) { navigate('/login'); return; }
+
     const userData = JSON.parse(stored);
     setUser(userData);
     setFormData(prev => ({
@@ -26,6 +29,8 @@ function Profile() {
       name:  userData.name  || '',
       email: userData.email || '',
     }));
+
+    return () => document.body.classList.remove('page-loaded');  // ✅ cleanup
   }, [navigate]);
 
   const handleChange = (e) => {
@@ -50,12 +55,15 @@ function Profile() {
 
     setLoading(true);
     try {
-      const payload = { name: formData.name, email: formData.email };
+      const payload = {
+        name:    formData.name,
+        email:   formData.email,
+        user_id: localStorage.getItem('userId'),  // ✅ session fallback
+      };
       if (formData.password) payload.password = formData.password;
 
-      const response = await api.patch(`/auth/profile/`, payload);
+      await api.patch('/auth/profile/', payload);
 
-      // ✅ update localStorage with new info
       const updated = { ...user, name: formData.name, email: formData.email };
       localStorage.setItem('user', JSON.stringify(updated));
       setUser(updated);
@@ -75,18 +83,35 @@ function Profile() {
   };
 
   return (
-    <div style={{ minHeight: '100vh', background: '#fdf6f8', padding: '40px 20px' }}>
-      <div style={{ maxWidth: '520px', margin: '0 auto' }}>
+    <div style={{ minHeight: '100vh', background: '#fdf6f8', padding: '0' }}>
 
-        {/* Back */}
+      {/* ✅ MINI NAVBAR — prevents blank look */}
+      <header style={{
+        background: '#fff', padding: '14px 28px',
+        display: 'flex', alignItems: 'center',
+        justifyContent: 'space-between',
+        boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
+        position: 'sticky', top: 0, zIndex: 100
+      }}>
         <button
           onClick={() => navigate(-1)}
-          style={{ background: 'none', border: 'none', cursor: 'pointer',
-                   fontSize: '14px', color: '#c0607a', marginBottom: '24px',
-                   display: 'flex', alignItems: 'center', gap: '6px' }}
+          style={{
+            background: 'none', border: 'none', cursor: 'pointer',
+            display: 'flex', alignItems: 'center', gap: '6px',
+            color: '#c0607a', fontSize: '14px', fontWeight: '500'
+          }}
         >
           <i className="fa-solid fa-arrow-left"></i> Back
         </button>
+        <span style={{ fontWeight: '600', color: '#333', fontSize: '16px' }}>
+          My Profile
+        </span>
+        <Link to="/cart" style={{ color: '#c0607a', fontSize: '18px' }}>
+          <i className="fa-solid fa-cart-shopping"></i>
+        </Link>
+      </header>
+
+      <div style={{ maxWidth: '520px', margin: '40px auto', padding: '0 20px' }}>
 
         {/* Avatar */}
         <div style={{ textAlign: 'center', marginBottom: '28px' }}>
@@ -99,7 +124,16 @@ function Profile() {
             {getInitials(user?.name)}
           </div>
           <h2 style={{ margin: 0, color: '#333' }}>{user?.name}</h2>
-          <p style={{ margin: '4px 0 0', color: '#888', fontSize: '14px' }}>{user?.email}</p>
+          <p style={{ margin: '4px 0 0', color: '#888', fontSize: '14px' }}>
+            {user?.email}
+          </p>
+          <span style={{
+            display: 'inline-block', marginTop: '6px',
+            padding: '3px 12px', background: '#f4c2ce',
+            color: '#c0607a', borderRadius: '20px', fontSize: '12px'
+          }}>
+            {user?.role}
+          </span>
         </div>
 
         {/* Form Card */}
@@ -107,17 +141,24 @@ function Profile() {
           background: '#fff', borderRadius: '16px',
           padding: '28px', boxShadow: '0 4px 20px rgba(0,0,0,0.06)'
         }}>
-          <h3 style={{ marginTop: 0, color: '#333' }}>Edit Profile</h3>
+          <h3 style={{ marginTop: 0, color: '#333', marginBottom: '20px' }}>
+            Edit Profile
+          </h3>
 
           {success && (
-            <div style={{ background: '#e8f5e9', color: '#2e7d32', padding: '12px',
-                          borderRadius: '8px', marginBottom: '16px', fontSize: '14px' }}>
+            <div style={{
+              background: '#e8f5e9', color: '#2e7d32', padding: '12px',
+              borderRadius: '8px', marginBottom: '16px', fontSize: '14px'
+            }}>
               <i className="fa-solid fa-check-circle"></i> {success}
             </div>
           )}
+
           {error && (
-            <div style={{ background: '#ffebee', color: '#c62828', padding: '12px',
-                          borderRadius: '8px', marginBottom: '16px', fontSize: '14px' }}>
+            <div style={{
+              background: '#ffebee', color: '#c62828', padding: '12px',
+              borderRadius: '8px', marginBottom: '16px', fontSize: '14px'
+            }}>
               <i className="fa-solid fa-exclamation-circle"></i> {error}
             </div>
           )}
@@ -130,8 +171,10 @@ function Profile() {
               { label: 'Confirm Password', name: 'confirm_password', type: 'password', placeholder: 'Confirm new password' },
             ].map(field => (
               <div key={field.name} style={{ marginBottom: '16px' }}>
-                <label style={{ display: 'block', fontSize: '13px',
-                                color: '#666', marginBottom: '6px' }}>
+                <label style={{
+                  display: 'block', fontSize: '13px',
+                  color: '#666', marginBottom: '6px', fontWeight: '500'
+                }}>
                   {field.label}
                 </label>
                 <input
@@ -145,6 +188,8 @@ function Profile() {
                     border: '1px solid #e0e0e0', fontSize: '14px',
                     outline: 'none', boxSizing: 'border-box'
                   }}
+                  onFocus={e => e.target.style.border = '1px solid #c0607a'}
+                  onBlur={e  => e.target.style.border = '1px solid #e0e0e0'}
                 />
               </div>
             ))}
@@ -155,7 +200,8 @@ function Profile() {
               style={{
                 width: '100%', padding: '12px', background: '#c0607a',
                 color: '#fff', border: 'none', borderRadius: '10px',
-                fontSize: '15px', fontWeight: '600', cursor: 'pointer',
+                fontSize: '15px', fontWeight: '600',
+                cursor: loading ? 'not-allowed' : 'pointer',
                 marginTop: '8px', opacity: loading ? 0.7 : 1
               }}
             >
@@ -166,6 +212,28 @@ function Profile() {
             </button>
           </form>
         </div>
+
+        {/* Quick links */}
+        <div style={{ display: 'flex', gap: '12px', marginTop: '16px', paddingBottom: '40px' }}>
+          {[
+            { to: '/orders',   icon: 'fa-box',  label: 'My Orders' },
+            { to: '/settings', icon: 'fa-gear', label: 'Settings'  },
+          ].map(link => (
+            <Link key={link.to} to={link.to} style={{
+              flex: 1, padding: '14px', background: '#fff',
+              borderRadius: '12px', textAlign: 'center',
+              textDecoration: 'none', color: '#c0607a',
+              boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
+              fontSize: '14px', fontWeight: '500'
+            }}>
+              <i className={`fa-solid ${link.icon}`} style={{
+                display: 'block', fontSize: '20px', marginBottom: '6px'
+              }}></i>
+              {link.label}
+            </Link>
+          ))}
+        </div>
+
       </div>
     </div>
   );
