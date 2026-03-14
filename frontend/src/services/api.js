@@ -1,11 +1,11 @@
-// src/services/api.js
 import axios from 'axios';
 
 const api = axios.create({
-  baseURL: 'http://127.0.0.1:8000/api', // Make sure this is '/api' not '/base'
+  baseURL: 'http://127.0.0.1:8000/api',
   headers: {
     'Content-Type': 'application/json',
   },
+  withCredentials: true,    // ✅ CRITICAL — sends session cookie with every request
 });
 
 export default api;

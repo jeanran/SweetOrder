@@ -12,6 +12,12 @@ import Products from './components/Products';
 import Testimonials from './components/Testimonials';
 import Contacts from './components/Contacts';
 
+import Profile  from './components/Profile';
+import Orders   from './components/Orders';
+import Settings from './components/Settings';
+
+
+
 import './App.css';
 
 function App() {
@@ -29,6 +35,10 @@ function App() {
           <Route path="/register" element={<Register />} />
           <Route path="/cart" element={<Cart />} />
           <Route path="/checkout" element={<Checkout />} />
+          <Route path="/profile"  element={<Profile />} />
+          <Route path="/orders"   element={<Orders />} />
+          <Route path="/settings" element={<Settings />} />
+          
         </Routes>
       </div>
     </BrowserRouter>

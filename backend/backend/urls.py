@@ -5,8 +5,7 @@ from django.conf.urls.static import static
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('api/', include('base.urls')),  # Changed from 'api' to 'base'
-]
 
-if settings.DEBUG:
-    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+    # ✅ All your API routes live under /api/
+    path('api/', include('base.urls')),
+] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

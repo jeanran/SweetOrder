@@ -1,55 +1,137 @@
 from rest_framework import serializers
-from .models import User, Product, Order, OrderDetail, Cart
+from .models import User, Product, Cart, Order, OrderDetail
 from django.contrib.auth.hashers import make_password
+
+
+# ─── USER ─────────────────────────────────────────────────────
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ['user_id', 'name', 'email', 'password', 'role', 'created_at']
+        fields = ['user_id', 'name', 'email', 'role', 'created_at']
         extra_kwargs = {
-            'password': {'write_only': True},
-            'user_id': {'read_only': True},
-            'created_at': {'read_only': True}
+            'user_id':    {'read_only': True},
+            'created_at': {'read_only': True},
         }
-    
-    def create(self, validated_data):
-        validated_data['password'] = make_password(validated_data['password'])
-        return super().create(validated_data)
+        # ✅ password intentionally excluded — never send it to frontend
+
+
+# ─── REGISTER ─────────────────────────────────────────────────
 
 class RegisterSerializer(serializers.ModelSerializer):
     confirm_password = serializers.CharField(write_only=True)
-    
+
     class Meta:
         model = User
         fields = ['name', 'email', 'password', 'confirm_password', 'role']
         extra_kwargs = {
             'password': {'write_only': True},
+            'role':     {'required': False},
         }
-    
+
+    def validate_email(self, value):
+        if User.objects.filter(email=value).exists():
+            raise serializers.ValidationError('Email already registered.')
+        return value
+
     def validate(self, data):
         if data['password'] != data['confirm_password']:
-            raise serializers.ValidationError("Passwords do not match")
-        
-        if User.objects.filter(email=data['email']).exists():
-            raise serializers.ValidationError("Email already registered")
-        
+            raise serializers.ValidationError('Passwords do not match.')
+        if len(data['password']) < 6:
+            raise serializers.ValidationError('Password must be at least 6 characters.')
         return data
-    
+
     def create(self, validated_data):
         validated_data.pop('confirm_password')
-        user = User.objects.create(
+        # ✅ FIXED: don't call make_password() here
+        # model's save() already hashes it — calling it here causes double hashing
+        return User.objects.create(
             name=validated_data['name'],
             email=validated_data['email'],
-            password=make_password(validated_data['password']),
+            password=validated_data['password'],   # model.save() will hash this
             role=validated_data.get('role', 'customer')
         )
-        return user
 
-class LoginSerializer(serializers.Serializer):
-    email = serializers.EmailField()
-    password = serializers.CharField(write_only=True)
+
+# ─── PRODUCT ──────────────────────────────────────────────────
 
 class ProductSerializer(serializers.ModelSerializer):
+    image_url = serializers.SerializerMethodField()   # ✅ returns full usable URL
+
     class Meta:
         model = Product
-        fields = '__all__'
+        fields = [
+            'product_id', 'product_name', 'description',
+            'price', 'category', 'image_url',
+            'stock', 'is_available'
+        ]
+        # ✅ raw 'image' field excluded — use image_url instead
+
+    def get_image_url(self, obj):
+        request = self.context.get('request')
+        if obj.image:
+            return request.build_absolute_uri(obj.image.url) if request else obj.image.url
+        return None
+
+
+# ─── CART ─────────────────────────────────────────────────────
+
+class CartSerializer(serializers.ModelSerializer):
+    # ✅ FIXED: include product details React needs to display the cart
+    product_name = serializers.CharField(
+        source='product.product_name', read_only=True
+    )
+    price = serializers.DecimalField(
+        source='product.price',
+        max_digits=10, decimal_places=2,
+        read_only=True
+    )
+    image_url = serializers.SerializerMethodField()
+    subtotal  = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Cart
+        fields = [
+            'cart_id', 'product_id', 'product_name',
+            'price', 'image_url', 'quantity', 'subtotal'
+        ]
+
+    def get_image_url(self, obj):
+        request = self.context.get('request')
+        if obj.product.image:
+            return request.build_absolute_uri(obj.product.image.url) if request else obj.product.image.url
+        return None
+
+    def get_subtotal(self, obj):
+        return str(obj.subtotal)   # uses @property subtotal from Cart model
+
+
+# ─── ORDER ────────────────────────────────────────────────────
+
+class OrderDetailSerializer(serializers.ModelSerializer):
+    product_name = serializers.CharField(
+        source='product.product_name', read_only=True
+    )
+    subtotal = serializers.SerializerMethodField()
+
+    class Meta:
+        model = OrderDetail
+        fields = [
+            'order_detail_id', 'product_id', 'product_name',
+            'quantity', 'price', 'subtotal'
+        ]
+
+    def get_subtotal(self, obj):
+        return str(obj.subtotal)
+
+
+class OrderSerializer(serializers.ModelSerializer):
+    order_details = OrderDetailSerializer(many=True, read_only=True)  # ✅ nested details
+
+    class Meta:
+        model = Order
+        fields = [
+            'order_id', 'user_id', 'order_date',
+            'total_amount', 'status', 'delivery_address',
+            'order_details'                                # ✅ includes line items
+        ]

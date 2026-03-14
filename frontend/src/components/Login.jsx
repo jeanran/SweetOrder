@@ -6,45 +6,42 @@ import '../styles/login.css';
 function Login() {
   const navigate = useNavigate();
   const location = useLocation();
+
   const [formData, setFormData] = useState({
     email: location.state?.email || '',
     password: ''
   });
+
   const [error, setError] = useState('');
   const [successMessage, setSuccessMessage] = useState(location.state?.message || '');
   const [loading, setLoading] = useState(false);
 
-  // Check if user is already logged in
   useEffect(() => {
-  document.body.classList.add('page-loaded');
+    document.body.classList.add('page-loaded');
 
-  const user = localStorage.getItem('user');
-  const token = localStorage.getItem('token');
-  if (user && token) {
-    try {
-      const userData = JSON.parse(user);
-      // Only redirect if userData is valid and has a role
-      if (userData?.role) {
-        navigate('/homepage', { replace: true });
+    // ✅ FIXED: only check user, no token needed
+    const user = localStorage.getItem('user');
+    if (user) {
+      try {
+        const userData = JSON.parse(user);
+        // ✅ FIXED: role-based redirect
+        if (userData?.role === 'admin') {
+          navigate('/admin/dashboard', { replace: true });
+        } else if (userData?.role === 'customer') {
+          navigate('/homepage', { replace: true });
+        }
+      } catch (err) {
+        // Corrupted data — wipe it
+        localStorage.removeItem('user');
+        localStorage.removeItem('userId');
       }
-    } catch (err) {
-      console.error('Error parsing user from localStorage', err);
-      // Stay on login page if parsing fails
     }
-  }
 
-  return () => {
-    document.body.classList.remove('page-loaded');
-  };
-}, [navigate]);
-
-    
+    return () => document.body.classList.remove('page-loaded');
+  }, [navigate]);
 
   const handleChange = (e) => {
-    setFormData(prev => ({
-      ...prev,
-      [e.target.name]: e.target.value
-    }));
+    setFormData(prev => ({ ...prev, [e.target.name]: e.target.value }));
     setError('');
   };
 
@@ -54,19 +51,27 @@ function Login() {
     setLoading(true);
 
     try {
-      const response = await api.post('/login/', {
+      // ✅ FIXED: correct endpoint
+      const response = await api.post('/auth/login/', {
         email: formData.email,
         password: formData.password
       });
 
       if (response.status === 200 && response.data.user) {
-        // Store user data
-        localStorage.setItem('user', JSON.stringify(response.data.user));
-        localStorage.setItem('token', response.data.token || 'dummy-token');
+        const user = response.data.user;
 
-        // Navigate after login
-        navigate('/homepage', { replace: true });
+        // ✅ FIXED: no fake token, correct user_id field
+        localStorage.setItem('user', JSON.stringify(user));
+        localStorage.setItem('userId', user.user_id);
+
+        // ✅ FIXED: role-based redirect
+        if (user.role === 'admin') {
+          navigate('/admin/dashboard', { replace: true });
+        } else {
+          navigate('/homepage', { replace: true });
+        }
       }
+
     } catch (err) {
       console.error('Login error:', err);
 
@@ -74,15 +79,17 @@ function Login() {
         const status = err.response.status;
         const serverError = err.response.data?.error;
 
-        if (status === 401) setError('Invalid email or password');
-        else if (status === 404) setError('User not found');
-        else if (serverError) setError(serverError);
-        else setError('Login failed. Please try again.');
+        if (status === 401)       setError('Invalid email or password.');
+        else if (status === 404)  setError('User not found.');
+        else if (serverError)     setError(serverError);
+        else                      setError('Login failed. Please try again.');
+
       } else if (err.request) {
-        setError('Cannot connect to server. Make sure Django is running.');
+        setError('Cannot connect to server. Make sure Django is running on port 8000.');
       } else {
         setError('An unexpected error occurred. Please try again.');
       }
+
     } finally {
       setLoading(false);
     }
@@ -158,6 +165,7 @@ function Login() {
             <p className="login-text">
               Don't have an account? <Link to="/register">Register</Link>
             </p>
+
           </form>
         </div>
 

@@ -1,154 +1,209 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import api from '../services/api';        // ✅ use api.js not raw fetch
 import '../styles/checkout.css';
 
 function Checkout() {
   const navigate = useNavigate();
 
-  useEffect(() => {
-    document.body.classList.add('page-loaded');
-    return () => {
-      document.body.classList.remove('page-loaded');
-    };
-  }, []);
+  const [cartItems, setCartItems]   = useState([]);
+  const [loading, setLoading]       = useState(true);
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError]           = useState('');
 
-  // Sample cart data
-  const [cartItems, setCartItems] = useState([
-    {
-      id: 1,
-      name: 'Wedding Cake',
-      price: 35.00,
-      quantity: 1,
-      image: '/assets/3layer_weddingcake.jpg'
-    },
-    {
-      id: 2,
-      name: 'Birthday Cake',
-      price: 32.00,
-      quantity: 2,
-      image: '/assets/birthdaycake.jpg'
-    },
-    {
-      id: 3,
-      name: 'Men\'s Birthday Cake',
-      price: 40.00,
-      quantity: 1,
-      image: '/assets/men-birthdaycake.jpg'
-    }
-  ]);
-
-  // Form state
   const [formData, setFormData] = useState({
-    fullName: '',
-    email: '',
-    phone: '',
-    address: '',
+    fullName:      '',
+    email:         '',
+    phone:         '',
+    address:       '',
     paymentMethod: 'cash'
   });
 
-  // Calculate totals
-  const subtotal = cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-  const deliveryFee = 5;
+  const deliveryFee = 50;
+
+  // ─── ON MOUNT ───────────────────────────────────────────────
+  useEffect(() => {
+    document.body.classList.add('page-loaded');
+
+    // ✅ redirect if not logged in
+    const user = localStorage.getItem('user');
+    if (!user) {
+      navigate('/login');
+      return;
+    }
+
+    // ✅ pre-fill name and email from localStorage
+    const userData = JSON.parse(user);
+    setFormData(prev => ({
+      ...prev,
+      fullName: userData.name  || '',
+      email:    userData.email || '',
+    }));
+
+    fetchCart();
+
+    return () => document.body.classList.remove('page-loaded');
+  }, [navigate]);
+
+  // ─── FETCH REAL CART FROM DJANGO ────────────────────────────
+  const fetchCart = async () => {
+    const userId = localStorage.getItem('userId');
+    try {
+      const response = await api.get(`/cart/?user_id=${userId}`);
+      const data = Array.isArray(response.data)
+        ? response.data
+        : response.data.results || [];
+      setCartItems(data);
+    } catch (err) {
+      console.error('Failed to fetch cart:', err);
+      setError('Failed to load cart items.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // ─── TOTALS ─────────────────────────────────────────────────
+  const subtotal = cartItems.reduce(
+    (sum, item) => sum + (parseFloat(item.price || 0) * item.quantity), 0
+  );
   const total = subtotal + deliveryFee;
 
-  // Handle form input changes
+  // ─── FORM HANDLERS ──────────────────────────────────────────
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }));
+    setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  // Handle payment method change
   const handlePaymentChange = (e) => {
-    setFormData(prev => ({
-      ...prev,
-      paymentMethod: e.target.value
-    }));
+    setFormData(prev => ({ ...prev, paymentMethod: e.target.value }));
   };
 
-  // Handle form submission
-  const handleSubmit = (e) => {
+  // ─── SUBMIT ORDER ───────────────────────────────────────────
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log('Order placed:', { formData, cartItems, total });
-    alert('Order placed successfully!');
-    navigate('/products');
+    setSubmitting(true);
+    setError('');
+
+    const userId = localStorage.getItem('userId');
+
+    if (!userId) {
+      navigate('/login');
+      return;
+    }
+
+    if (cartItems.length === 0) {
+      setError('Your cart is empty.');
+      setSubmitting(false);
+      return;
+    }
+
+    try {
+      // ✅ use api.js, send user_id + address
+      const response = await api.post('/checkout/', {
+        user_id:          userId,
+        delivery_address: formData.address,
+      });
+
+      if (response.status === 201) {
+        alert(`Order #${response.data.order_id} placed successfully! Total: ₱${response.data.total}`);
+        navigate('/products');
+      }
+
+    } catch (err) {
+      console.error('Checkout error:', err);
+      if (err.response?.data?.error) {
+        setError(err.response.data.error);
+      } else {
+        setError('Failed to place order. Please try again.');
+      }
+    } finally {
+      setSubmitting(false);
+    }
   };
 
-  const goBack = () => {
-    navigate(-1);
-  };
-
+  // ─── RENDER ─────────────────────────────────────────────────
   return (
     <section className="checkout-page">
-      {/* Back Button */}
-      <button className="back-button" onClick={goBack}>
+
+      <button className="back-button" onClick={() => navigate(-1)}>
         <i className="fa-solid fa-arrow-left"></i> Back
       </button>
 
       <h1 className="checkout-title">Checkout</h1>
 
+      {error && (
+        <div style={{
+          background: '#ffebee', color: '#c62828',
+          padding: '12px', borderRadius: '8px',
+          margin: '0 auto 20px', maxWidth: '800px',
+          border: '1px solid #ffcdd2', textAlign: 'center'
+        }}>
+          <i className="fa-solid fa-exclamation-circle"></i> {error}
+        </div>
+      )}
+
       <div className="checkout-container">
-        {/* LEFT SIDE - FORM */}
+
+        {/* LEFT — FORM */}
         <div className="checkout-form">
           <h2>Customer Information</h2>
 
-          <form id="order-form" onSubmit={handleSubmit}>
+          <form onSubmit={handleSubmit}>
+
             <div className="form-group">
               <label>Full Name</label>
-              <input 
-                type="text" 
+              <input
+                type="text"
                 name="fullName"
-                placeholder="Enter your full name" 
+                placeholder="Enter your full name"
                 value={formData.fullName}
                 onChange={handleInputChange}
-                required 
+                required
               />
             </div>
 
             <div className="form-group">
               <label>Email Address</label>
-              <input 
-                type="email" 
+              <input
+                type="email"
                 name="email"
-                placeholder="Enter your email" 
+                placeholder="Enter your email"
                 value={formData.email}
                 onChange={handleInputChange}
-                required 
+                required
               />
             </div>
 
             <div className="form-group">
               <label>Phone Number</label>
-              <input 
-                type="text" 
+              <input
+                type="text"
                 name="phone"
-                placeholder="Enter your phone number" 
+                placeholder="Enter your phone number"
                 value={formData.phone}
                 onChange={handleInputChange}
-                required 
+                required
               />
             </div>
 
             <div className="form-group">
               <label>Delivery Address</label>
-              <textarea 
+              <textarea
                 name="address"
-                placeholder="Enter your delivery address" 
+                placeholder="Enter your delivery address"
                 value={formData.address}
                 onChange={handleInputChange}
                 required
-              ></textarea>
+              />
             </div>
 
             <h3 className="payment-title">Payment Method</h3>
 
             <div className="payment-methods">
               <label className="payment-option">
-                <input 
-                  type="radio" 
-                  name="payment" 
+                <input
+                  type="radio"
+                  name="payment"
                   value="cash"
                   checked={formData.paymentMethod === 'cash'}
                   onChange={handlePaymentChange}
@@ -157,9 +212,9 @@ function Checkout() {
               </label>
 
               <label className="payment-option">
-                <input 
-                  type="radio" 
-                  name="payment" 
+                <input
+                  type="radio"
+                  name="payment"
                   value="card"
                   checked={formData.paymentMethod === 'card'}
                   onChange={handlePaymentChange}
@@ -168,49 +223,73 @@ function Checkout() {
               </label>
             </div>
 
-            <button type="submit" className="place-order">
-              Place Order
+            <button
+              type="submit"
+              className="place-order"
+              disabled={submitting || cartItems.length === 0}
+              style={{ opacity: submitting ? 0.7 : 1 }}
+            >
+              {submitting ? (
+                <><i className="fa-solid fa-spinner fa-spin"></i> Placing Order...</>
+              ) : (
+                'Place Order'
+              )}
             </button>
+
           </form>
         </div>
 
-        {/* RIGHT SIDE - ORDER SUMMARY */}
+        {/* RIGHT — ORDER SUMMARY */}
         <div className="order-summary">
           <h3>Order Summary</h3>
 
-          <div id="checkout-items" className="checkout-items">
-            {cartItems.map(item => (
-              <div key={item.id} className="checkout-item">
-                <div className="checkout-item-info">
-                  <span className="item-name">{item.name}</span>
-                  <span className="item-qty">x{item.quantity}</span>
+          {loading ? (
+            <div style={{ textAlign: 'center', padding: '20px' }}>
+              <i className="fa-solid fa-spinner fa-spin"></i> Loading...
+            </div>
+          ) : cartItems.length === 0 ? (
+            <div style={{ textAlign: 'center', color: '#888', padding: '20px' }}>
+              Your cart is empty.
+            </div>
+          ) : (
+            <div className="checkout-items">
+              {cartItems.map(item => (
+                <div key={item.cart_id} className="checkout-item">
+                  <div className="checkout-item-info">
+                    {/* ✅ use product_name from CartSerializer */}
+                    <span className="item-name">{item.product_name}</span>
+                    <span className="item-qty">x{item.quantity}</span>
+                  </div>
+                  <span className="item-price">
+                    ₱{(parseFloat(item.price) * item.quantity).toFixed(2)}
+                  </span>
                 </div>
-                <span className="item-price">${(item.price * item.quantity).toFixed(2)}</span>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
 
           <hr />
 
           <div className="summary-row">
             <span>Subtotal</span>
-            <span>${subtotal.toFixed(2)}</span>
+            <span>₱{subtotal.toFixed(2)}</span>
           </div>
 
           <div className="summary-row">
             <span>Delivery</span>
-            <span>${deliveryFee.toFixed(2)}</span>
+            <span>₱{deliveryFee.toFixed(2)}</span>
           </div>
 
           <div className="summary-row total">
             <span>Total</span>
-            <span>${total.toFixed(2)}</span>
+            <span>₱{total.toFixed(2)}</span>
           </div>
 
           <Link to="/cart" className="back-to-cart">
             ← Back to Cart
           </Link>
         </div>
+
       </div>
     </section>
   );

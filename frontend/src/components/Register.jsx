@@ -73,7 +73,7 @@ function Register() {
 
     try {
       // Using api service instead of fetch directly
-      const response = await api.post('/register/', {
+      const response = await api.post('/auth/register/', {
         name: formData.name,
         email: formData.email,
         password: formData.password,
