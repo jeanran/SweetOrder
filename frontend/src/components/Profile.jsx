@@ -1,27 +1,27 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate, Link } from 'react-router-dom';  // ✅ add Link
+import React, { useState, useEffect, useRef } from 'react';
+import { useNavigate, Link } from 'react-router-dom';
 import api from '../services/api';
+import '../styles/Profile.css';
 
 function Profile() {
-  const navigate = useNavigate();
+  const navigate    = useNavigate();
   const [user, setUser]       = useState(null);
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState('');
   const [error, setError]     = useState('');
+  const [scrolled, setScrolled] = useState(false);
+  const dropdownRef = useRef(null);
+  const [dropdownOpen, setDropdownOpen] = useState(false);
 
   const [formData, setFormData] = useState({
-    name:             '',
-    email:            '',
-    password:         '',
-    confirm_password: ''
+    name: '', email: '', password: '', confirm_password: ''
   });
 
   useEffect(() => {
-    document.body.classList.add('page-loaded');    // ✅ FIX: was missing
+    document.body.classList.add('page-loaded');
 
     const stored = localStorage.getItem('user');
     if (!stored) { navigate('/login'); return; }
-
     const userData = JSON.parse(stored);
     setUser(userData);
     setFormData(prev => ({
@@ -30,51 +30,63 @@ function Profile() {
       email: userData.email || '',
     }));
 
-    return () => document.body.classList.remove('page-loaded');  // ✅ cleanup
+    const handleScroll = () => setScrolled(window.scrollY > 50);
+    window.addEventListener('scroll', handleScroll);
+
+    const handleClickOutside = (e) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
+        setDropdownOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+
+    return () => {
+      document.body.classList.remove('page-loaded');
+      window.removeEventListener('scroll', handleScroll);
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
   }, [navigate]);
 
   const handleChange = (e) => {
     setFormData(prev => ({ ...prev, [e.target.name]: e.target.value }));
-    setError('');
-    setSuccess('');
+    setError(''); setSuccess('');
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError('');
-    setSuccess('');
-
+    setError(''); setSuccess('');
     if (formData.password && formData.password !== formData.confirm_password) {
-      setError('Passwords do not match.');
-      return;
+      setError('Passwords do not match.'); return;
     }
     if (formData.password && formData.password.length < 6) {
-      setError('Password must be at least 6 characters.');
-      return;
+      setError('Password must be at least 6 characters.'); return;
     }
-
     setLoading(true);
     try {
       const payload = {
         name:    formData.name,
         email:   formData.email,
-        user_id: localStorage.getItem('userId'),  // ✅ session fallback
+        user_id: localStorage.getItem('userId'),
       };
       if (formData.password) payload.password = formData.password;
-
       await api.patch('/auth/profile/', payload);
-
       const updated = { ...user, name: formData.name, email: formData.email };
       localStorage.setItem('user', JSON.stringify(updated));
       setUser(updated);
       setSuccess('Profile updated successfully!');
       setFormData(prev => ({ ...prev, password: '', confirm_password: '' }));
-
     } catch (err) {
       setError(err.response?.data?.error || 'Failed to update profile.');
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleLogout = async () => {
+    try { await api.post('/auth/logout/'); } catch (e) {}
+    localStorage.removeItem('user');
+    localStorage.removeItem('userId');
+    navigate('/login');
   };
 
   const getInitials = (name) => {
@@ -83,157 +95,136 @@ function Profile() {
   };
 
   return (
-    <div style={{ minHeight: '100vh', background: '#fdf6f8', padding: '0' }}>
+    <div className="profile-page">
 
-      {/* ✅ MINI NAVBAR — prevents blank look */}
-      <header style={{
-        background: '#fff', padding: '14px 28px',
-        display: 'flex', alignItems: 'center',
-        justifyContent: 'space-between',
-        boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
-        position: 'sticky', top: 0, zIndex: 100
-      }}>
-        <button
-          onClick={() => navigate(-1)}
-          style={{
-            background: 'none', border: 'none', cursor: 'pointer',
-            display: 'flex', alignItems: 'center', gap: '6px',
-            color: '#c0607a', fontSize: '14px', fontWeight: '500'
-          }}
-        >
-          <i className="fa-solid fa-arrow-left"></i> Back
-        </button>
-        <span style={{ fontWeight: '600', color: '#333', fontSize: '16px' }}>
-          My Profile
-        </span>
-        <Link to="/cart" style={{ color: '#c0607a', fontSize: '18px' }}>
-          <i className="fa-solid fa-cart-shopping"></i>
-        </Link>
+      {/* ✅ SAME NAVBAR AS HOMEPAGE */}
+      <header className={`navbar ${scrolled ? 'scrolled' : ''}`}>
+        <div className="container nav-container">
+          <div className="logo">
+            <img className="logo-img" src="/assets/logos.png" alt="SweetOrder logo" />
+          </div>
+          <nav className="nav-links">
+            <Link to="/homepage"     className="nav-link">Home</Link>
+            <Link to="/about"        className="nav-link">About</Link>
+            <Link to="/products"     className="nav-link">Cakes</Link>
+            <Link to="/testimonials" className="nav-link">Testimonials</Link>
+            <Link to="/contacts"     className="nav-link">Contacts</Link>
+          </nav>
+          <div className="nav-right">
+            <Link to="/cart">
+              <img className="cart-icon" src="/assets/cart.png" alt="Cart" />
+            </Link>
+            {user && (
+              <div className="nav-profile-wrapper" ref={dropdownRef}>
+                <button
+                  className="nav-profile-avatar"
+                  onClick={() => setDropdownOpen(p => !p)}
+                >
+                  {getInitials(user.name)}
+                </button>
+                {dropdownOpen && (
+                  <div className="profile-dropdown">
+                    <div className="dropdown-header">
+                      <div className="dropdown-avatar">{getInitials(user.name)}</div>
+                      <div>
+                        <p className="dropdown-name">{user.name}</p>
+                        <p className="dropdown-email">{user.email}</p>
+                      </div>
+                    </div>
+                    <hr className="dropdown-divider" />
+                    <Link to="/profile"  className="dropdown-item" onClick={() => setDropdownOpen(false)}>
+                      <i className="fa-solid fa-user"></i> My Profile
+                    </Link>
+                    <Link to="/orders"   className="dropdown-item" onClick={() => setDropdownOpen(false)}>
+                      <i className="fa-solid fa-box"></i> My Orders
+                    </Link>
+                    <Link to="/settings" className="dropdown-item" onClick={() => setDropdownOpen(false)}>
+                      <i className="fa-solid fa-gear"></i> Settings
+                    </Link>
+                    <hr className="dropdown-divider" />
+                    <button className="dropdown-item dropdown-logout" onClick={handleLogout}>
+                      <i className="fa-solid fa-right-from-bracket"></i> Logout
+                    </button>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        </div>
       </header>
 
-      <div style={{ maxWidth: '520px', margin: '40px auto', padding: '0 20px' }}>
+      {/* ✅ CONTENT */}
+      <div className="profile-content">
+        <div className="profile-grid">
 
-        {/* Avatar */}
-        <div style={{ textAlign: 'center', marginBottom: '28px' }}>
-          <div style={{
-            width: '80px', height: '80px', borderRadius: '50%',
-            background: '#c0607a', color: '#fff', fontSize: '28px',
-            fontWeight: '700', display: 'flex', alignItems: 'center',
-            justifyContent: 'center', margin: '0 auto 12px'
-          }}>
-            {getInitials(user?.name)}
+          {/* LEFT — Avatar */}
+          <div className="profile-avatar-card">
+            <div className="profile-avatar-circle">
+              {getInitials(user?.name)}
+            </div>
+            <h2 className="profile-avatar-name">{user?.name}</h2>
+            <p className="profile-avatar-email">{user?.email}</p>
+            <span className="profile-avatar-role">{user?.role}</span>
+
+            <div className="profile-quick-links">
+              {[
+                { to: '/orders',   icon: 'fa-box',  label: 'My Orders' },
+                { to: '/settings', icon: 'fa-gear', label: 'Settings'  },
+              ].map(link => (
+                <Link key={link.to} to={link.to} className="profile-quick-link">
+                  <i className={`fa-solid ${link.icon}`}></i>
+                  {link.label}
+                </Link>
+              ))}
+            </div>
           </div>
-          <h2 style={{ margin: 0, color: '#333' }}>{user?.name}</h2>
-          <p style={{ margin: '4px 0 0', color: '#888', fontSize: '14px' }}>
-            {user?.email}
-          </p>
-          <span style={{
-            display: 'inline-block', marginTop: '6px',
-            padding: '3px 12px', background: '#f4c2ce',
-            color: '#c0607a', borderRadius: '20px', fontSize: '12px'
-          }}>
-            {user?.role}
-          </span>
-        </div>
 
-        {/* Form Card */}
-        <div style={{
-          background: '#fff', borderRadius: '16px',
-          padding: '28px', boxShadow: '0 4px 20px rgba(0,0,0,0.06)'
-        }}>
-          <h3 style={{ marginTop: 0, color: '#333', marginBottom: '20px' }}>
-            Edit Profile
-          </h3>
+          {/* RIGHT — Form */}
+          <div className="profile-form-card">
+            <h3>Edit Profile</h3>
 
-          {success && (
-            <div style={{
-              background: '#e8f5e9', color: '#2e7d32', padding: '12px',
-              borderRadius: '8px', marginBottom: '16px', fontSize: '14px'
-            }}>
-              <i className="fa-solid fa-check-circle"></i> {success}
-            </div>
-          )}
-
-          {error && (
-            <div style={{
-              background: '#ffebee', color: '#c62828', padding: '12px',
-              borderRadius: '8px', marginBottom: '16px', fontSize: '14px'
-            }}>
-              <i className="fa-solid fa-exclamation-circle"></i> {error}
-            </div>
-          )}
-
-          <form onSubmit={handleSubmit}>
-            {[
-              { label: 'Full Name',        name: 'name',             type: 'text',     placeholder: 'Your full name' },
-              { label: 'Email Address',    name: 'email',            type: 'email',    placeholder: 'Your email' },
-              { label: 'New Password',     name: 'password',         type: 'password', placeholder: 'Leave blank to keep current' },
-              { label: 'Confirm Password', name: 'confirm_password', type: 'password', placeholder: 'Confirm new password' },
-            ].map(field => (
-              <div key={field.name} style={{ marginBottom: '16px' }}>
-                <label style={{
-                  display: 'block', fontSize: '13px',
-                  color: '#666', marginBottom: '6px', fontWeight: '500'
-                }}>
-                  {field.label}
-                </label>
-                <input
-                  type={field.type}
-                  name={field.name}
-                  placeholder={field.placeholder}
-                  value={formData[field.name]}
-                  onChange={handleChange}
-                  style={{
-                    width: '100%', padding: '10px 14px', borderRadius: '8px',
-                    border: '1px solid #e0e0e0', fontSize: '14px',
-                    outline: 'none', boxSizing: 'border-box'
-                  }}
-                  onFocus={e => e.target.style.border = '1px solid #c0607a'}
-                  onBlur={e  => e.target.style.border = '1px solid #e0e0e0'}
-                />
+            {success && (
+              <div className="profile-alert success">
+                <i className="fa-solid fa-check-circle"></i> {success}
               </div>
-            ))}
+            )}
+            {error && (
+              <div className="profile-alert error">
+                <i className="fa-solid fa-exclamation-circle"></i> {error}
+              </div>
+            )}
 
-            <button
-              type="submit"
-              disabled={loading}
-              style={{
-                width: '100%', padding: '12px', background: '#c0607a',
-                color: '#fff', border: 'none', borderRadius: '10px',
-                fontSize: '15px', fontWeight: '600',
-                cursor: loading ? 'not-allowed' : 'pointer',
-                marginTop: '8px', opacity: loading ? 0.7 : 1
-              }}
-            >
-              {loading
-                ? <><i className="fa-solid fa-spinner fa-spin"></i> Saving...</>
-                : 'Save Changes'
-              }
-            </button>
-          </form>
+            <form onSubmit={handleSubmit}>
+              <div className="profile-fields-grid">
+                {[
+                  { label: 'Full Name',        name: 'name',             type: 'text',     placeholder: 'Your full name' },
+                  { label: 'Email Address',    name: 'email',            type: 'email',    placeholder: 'Your email' },
+                  { label: 'New Password',     name: 'password',         type: 'password', placeholder: 'Leave blank to keep current' },
+                  { label: 'Confirm Password', name: 'confirm_password', type: 'password', placeholder: 'Confirm new password' },
+                ].map(field => (
+                  <div key={field.name} className="profile-field">
+                    <label>{field.label}</label>
+                    <input
+                      type={field.type}
+                      name={field.name}
+                      placeholder={field.placeholder}
+                      value={formData[field.name]}
+                      onChange={handleChange}
+                    />
+                  </div>
+                ))}
+              </div>
+
+              <button type="submit" className="profile-submit-btn" disabled={loading}>
+                {loading
+                  ? <><i className="fa-solid fa-spinner fa-spin"></i> Saving...</>
+                  : 'Save Changes'
+                }
+              </button>
+            </form>
+          </div>
+
         </div>
-
-        {/* Quick links */}
-        <div style={{ display: 'flex', gap: '12px', marginTop: '16px', paddingBottom: '40px' }}>
-          {[
-            { to: '/orders',   icon: 'fa-box',  label: 'My Orders' },
-            { to: '/settings', icon: 'fa-gear', label: 'Settings'  },
-          ].map(link => (
-            <Link key={link.to} to={link.to} style={{
-              flex: 1, padding: '14px', background: '#fff',
-              borderRadius: '12px', textAlign: 'center',
-              textDecoration: 'none', color: '#c0607a',
-              boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
-              fontSize: '14px', fontWeight: '500'
-            }}>
-              <i className={`fa-solid ${link.icon}`} style={{
-                display: 'block', fontSize: '20px', marginBottom: '6px'
-              }}></i>
-              {link.label}
-            </Link>
-          ))}
-        </div>
-
       </div>
     </div>
   );

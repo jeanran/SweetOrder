@@ -3,76 +3,64 @@ import { Link } from 'react-router-dom';
 import '../styles/About.css';
 
 function About() {
-  // State for navbar scroll effect
   const [scrolled, setScrolled] = useState(false);
 
-  // Effect for body opacity and scroll listener
   useEffect(() => {
-    // Add the page-loaded class to body when component mounts
     document.body.classList.add('page-loaded');
-    
-    // Scroll event listener for navbar
-    const handleScroll = () => {
-      if (window.scrollY > 50) {
-        setScrolled(true);
-      } else {
-        setScrolled(false);
-      }
-    };
 
+    const handleScroll = () => setScrolled(window.scrollY > 50);
     window.addEventListener('scroll', handleScroll);
-    
-    // Clean up when component unmounts
+
     return () => {
       document.body.classList.remove('page-loaded');
       window.removeEventListener('scroll', handleScroll);
     };
   }, []);
 
-
   return (
     <>
-      {/*NAVIGATION BAR with scroll effect*/}
+      {/* ── NAVBAR ───────────────────────────────────── */}
       <header className={`navbar ${scrolled ? 'scrolled' : ''}`}>
         <div className="container nav-container">
           <div className="logo">
-            <img className="logo-img" src="/assets/logos.png" alt="sweetorder logo" />
+            <img className="logo-img" src="/assets/logos.png" alt="SweetOrder logo" />
           </div>
-
           <nav className="nav-links">
-            <Link to="/homepage" className="nav-link">Home</Link>
-            <Link to="/about" className="nav-link">About</Link>
-            <Link to="/products" className="nav-link">Cakes</Link>
+            <Link to="/homepage"     className="nav-link">Home</Link>
+            <Link to="/about"        className="nav-link">About</Link>
+            <Link to="/products"     className="nav-link">Cakes</Link>
             <Link to="/testimonials" className="nav-link">Testimonials</Link>
-            <Link to="/contacts" className="nav-link">Contacts</Link>
+            <Link to="/contacts"     className="nav-link">Contacts</Link>
           </nav>
-
           <div className="nav-right">
-            <Link to="/cart"><img className="cart-icon" src="/assets/cart.png" alt="cart icon" /></Link>
+            <Link to="/cart">
+              <img className="cart-icon" src="/assets/cart.png" alt="Cart" />
+            </Link>
           </div>
         </div>
       </header>
 
-      {/*ABOUT ME SECTION*/}
+      {/* ── ABOUT SECTION ────────────────────────────── */}
       <section className="about-section" id="about">
-        <h1 className="title">ABOUT US</h1>
+        <h1 className="about-title">About Us</h1>
+
         <div className="about-container">
           <div className="about-img">
-            <img src="/assets/about-us-image.jpg" alt="About Image" />
+            <img src="/assets/about-us-image.jpg" alt="About SweetOrder" />
           </div>
           <div className="about-content">
-            <p>WELCOME TO SWEETORDER</p>
-            <h2>Freshly Baked Cookies Made With Love</h2>
+            <p className="about-tag">Welcome to SweetOrder</p>
+            <h2>Freshly Baked Cakes Made With Love</h2>
             <p className="about-text">
-              At SweetOrder, every cake is crafted with passion and high-quality ingredients.
-              Whether it's birthdays, weddings, or special celebrations, our bakery creates
-              memorable desserts that make every moment sweeter.
+              At SweetOrder, every cake is crafted with passion and high-quality
+              ingredients. Whether it's birthdays, weddings, or special celebrations,
+              our bakery creates memorable desserts that make every moment sweeter.
             </p>
-            <a href="#best-sellers" className="about-btn">Explore Cakes</a>
+            <Link to="/products" className="about-btn">Explore Cakes</Link>
           </div>
         </div>
 
-        {/* ABOUT STATS */}
+        {/* ── STATS ──────────────────────────────────── */}
         <div className="about-stats">
           <div className="stat">
             <h3>10+</h3>
@@ -89,7 +77,7 @@ function About() {
         </div>
       </section>
 
-      {/*ORDER CUSTOMIZE CAKE*/}
+      {/* ── CUSTOM CAKE SECTION ──────────────────────── */}
       <section className="custom-cake">
         <div className="custom-container">
           <div className="custom-text">
@@ -99,7 +87,7 @@ function About() {
               our bakers will create the perfect cake for your celebration.
               Birthdays, weddings, anniversaries, and more!
             </p>
-            <a href="#contact" className="custom-btn">Request Custom Cake</a>
+            <Link to="/contacts" className="custom-btn">Request Custom Cake</Link>
           </div>
           <div className="custom-image">
             <img src="/assets/about-us-image.jpg" alt="Custom Cake" />
@@ -107,9 +95,10 @@ function About() {
         </div>
       </section>
 
+      {/* ── FOOTER ───────────────────────────────────── */}
       <footer className="footer">
         <div className="footer-container">
-          {/* BRAND */}
+
           <div className="footer-brand">
             <img src="/assets/logos.png" className="footer-logo" alt="SweetOrder" />
             <p>
@@ -118,25 +107,23 @@ function About() {
             </p>
           </div>
 
-          {/* QUICK LINKS */}
           <div className="footer-links">
             <h4>Quick Links</h4>
-            <a href="#home">Home</a>
-            <a href="#about">About</a>
-            <a href="#best-sellers">Cakes</a>
-            <a href="#testimonials">Testimonials</a>
-            <a href="#contact">Contact</a>
+            <Link to="/homepage">Home</Link>
+            <Link to="/about">About</Link>
+            <Link to="/products">Cakes</Link>
+            <Link to="/testimonials">Testimonials</Link>
+            <Link to="/contacts">Contact</Link>
           </div>
 
-          {/* CONTACT */}
           <div className="footer-contact">
             <h4>Contact</h4>
             <p>Email: sweetorder@gmail.com</p>
             <p>Phone: +63 912 345 6789</p>
             <p>Location: Cagayan de Oro, Philippines</p>
           </div>
-        </div>
 
+        </div>
         <div className="footer-bottom">
           <p>© 2026 SweetOrder Bakery. All rights reserved.</p>
         </div>

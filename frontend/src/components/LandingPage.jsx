@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import '../styles/landing_page.css';
 
 function LandingPage() {
-  // State for navbar scroll effect
+  
   const [scrolled, setScrolled] = useState(false);
 
   // Effect for body opacity and scroll listener
@@ -117,7 +117,7 @@ function LandingPage() {
             </p>
             <div className="hero-buttons">
               <Link to="/login"><button className="order-btn">Order Now</button></Link>
-              <a href="#best-sellers"><button className="view-btn">View Cakes</button></a>
+              
             </div>
           </div>
 

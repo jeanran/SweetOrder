@@ -133,8 +133,10 @@ color:#c46b6b;
     justify-content: center;
     align-items:center;
     flex-wrap: wrap;
-
+    overflow: visible;  /* 👈 add this so cake can overflow */
 }
+
+
 
 .hero-text{
     flex: 1;
@@ -194,24 +196,20 @@ color:#c46b6b;
     color:white;
 }
 
-.hero-image{
+.hero-image {
     flex: 1;
     min-width: 300px;
     display: flex;
     justify-content: center;
-    position: absolute;
-    right: 150px;
-    top: 50%;
-    transform: translateY(-50%);
+    align-items: center;
+    overflow: visible;
 }
 
-.hero-image img{
-    width:520px;
-    max-width:100%;
-    max-height: 450px;
-    object-fit:cover;
+.hero-image img {
+    width: 500px;
+    min-width: 500px;   
+    object-fit: contain;
     animation: float 5s ease-in-out infinite;
-    overflow: visible;
 }
 
 @keyframes float{
@@ -219,7 +217,6 @@ color:#c46b6b;
     50%{transform:translateY(-10px);}
     100%{transform:translateY(0);}
 }
-
 /* ABOUT SECTION */
 
 .about-section{

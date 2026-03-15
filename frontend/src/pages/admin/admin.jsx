@@ -1,259 +1,150 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import Home from './pages/home';
-import Menu from './pages/menu';
-import Orders from './pages/orders';
-import Users from './pages/users';
-import Category from './pages/category';
-import Settings from './pages/settings';
+import "../../styles/Admin.css";
+import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import api from "../../services/api";
 
-const AdminPanel = () => {
-  const [currentPage, setCurrentPage] = useState('home');
-  const navigate = useNavigate();
+// ✅ all files are flat inside src/pages/admin/
+import HomeAdmin       from "./home";
+import OrdersAdmin     from "./orders";
+import MenuAdmin       from "./menu";
+import CategoriesAdmin from "./category";
+import UsersAdmin      from "./users";
+import SettingsAdmin   from "./settings";
 
-  const user = JSON.parse(localStorage.getItem('user') || 'null');
+function Admin() {
+  const navigate          = useNavigate();
+  const [page, setPage]   = useState("home");
+  const [admin, setAdmin] = useState(null);
 
   useEffect(() => {
-    // Add the page-loaded class to body
-    document.body.classList.add('page-loaded');
+    document.body.classList.add("page-loaded");
 
-    // Check if admin is logged in
-    const token = localStorage.getItem('token');
-    const user = JSON.parse(localStorage.getItem('user') || 'null');
-    console.log('Token:', token);
-    console.log('User:', JSON.stringify(user));
-    if (!token || !user) {
-      console.log('Redirecting to login: no token or user');
-      navigate('/login');
+    const stored = localStorage.getItem("user");
+    if (!stored) { navigate("/login"); return; }
+
+    const userData = JSON.parse(stored);
+    if (userData.role !== "admin") {
+      navigate("/homepage");
       return;
     }
-    if (user.role !== 'admin') {
-      console.log('Redirecting to homepage: not admin');
-      navigate('/homepage');
-      return;
-    }
-    console.log('Admin logged in, staying on admin panel');
+    setAdmin(userData);
 
-    // Cleanup
-    return () => {
-      document.body.classList.remove('page-loaded');
-    };
-  }, [navigate, user]);
+    return () => document.body.classList.remove("page-loaded");
+  }, [navigate]);
 
-  const handleLogout = () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
-    navigate('/login');
+  const handleLogout = async () => {
+    try { await api.post("/auth/logout/"); } catch (e) {}
+    localStorage.removeItem("user");
+    localStorage.removeItem("userId");
+    navigate("/login");
   };
 
-  const renderPage = () => {
-    console.log('Rendering page:', currentPage);
-    switch (currentPage) {
-      case 'home':
-        return <Home />;
-      case 'menu':
-        return <Menu />;
-      case 'orders':
-        return <Orders />;
-      case 'users':
-        return <Users />;
-      case 'category':
-        return <Category />;
-      case 'settings':
-        return <Settings />;
-      default:
-        return <Home />;
-    }
-  };
-
-  if (!user) return <div>Loading...</div>;
+  const navItems = [
+    { key: "home",       label: "Home",       icon: "fa-gauge" },
+    { key: "orders",     label: "Orders",     icon: "fa-box" },
+    { key: "menu",       label: "Menu",       icon: "fa-cake-candles" },
+    { key: "categories", label: "Categories", icon: "fa-tags" },
+    { key: "users",      label: "Users",      icon: "fa-users" },
+    { key: "settings",   label: "Settings",   icon: "fa-gear" },
+  ];
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh', fontFamily: "'Quicksand', sans-serif" }}>
-      {/* Header */}
-      <header style={{
-        backgroundColor: '#FFECF2',
-        padding: '20px 40px',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        boxShadow: '0 2px 10px rgba(0,0,0,0.1)',
-        position: 'fixed',
-        top: 0,
-        left: 0,
-        right: 0,
-        zIndex: 1000
-      }}>
-        <div style={{ display: 'flex', alignItems: 'center' }}>
-          <img src="/assets/logos.png" alt="SweetOrder Logo" style={{ width: '50px', marginRight: '20px' }} />
-          <h1 style={{ color: '#c46b6b', margin: 0, fontSize: '24px' }}>SweetOrder Admin</h1>
+    <div className="dashboard">
+
+      {/* SIDEBAR */}
+      <div className="sidebar">
+        <h2>SweetOrder</h2>
+
+        <ul>
+          {navItems.map(item => (
+            <li
+              key={item.key}
+              onClick={() => setPage(item.key)}
+              style={{
+                background:  page === item.key ? "rgba(255,255,255,0.12)" : "transparent",
+                borderLeft:  page === item.key ? "3px solid #c0607a" : "3px solid transparent",
+                padding:     "12px 20px",
+                cursor:      "pointer",
+                display:     "flex",
+                alignItems:  "center",
+                gap:         "10px",
+                transition:  "all 0.15s",
+                listStyle:   "none",
+              }}
+            >
+              <i
+                className={`fa-solid ${item.icon}`}
+                style={{
+                  width: "16px",
+                  color: page === item.key ? "#c0607a" : "rgba(255,255,255,0.6)"
+                }}
+              ></i>
+              {item.label}
+            </li>
+          ))}
+        </ul>
+
+        {/* Admin info + logout at bottom */}
+        <div style={{
+          marginTop: "auto",
+          padding: "16px",
+          borderTop: "1px solid rgba(255,255,255,0.1)"
+        }}>
+          <p style={{ margin: "0 0 2px", fontSize: "13px",
+                      fontWeight: "600", color: "#fff" }}>
+            {admin?.name}
+          </p>
+          <p style={{ margin: "0 0 12px", fontSize: "11px",
+                      color: "rgba(255,255,255,0.5)" }}>
+            {admin?.email}
+          </p>
+          <button
+            onClick={handleLogout}
+            style={{
+              width: "100%", padding: "9px",
+              background: "rgba(255,255,255,0.08)",
+              color: "#fff", border: "none",
+              borderRadius: "6px", cursor: "pointer",
+              fontSize: "13px", display: "flex",
+              alignItems: "center",
+              justifyContent: "center", gap: "6px"
+            }}
+          >
+            <i className="fa-solid fa-right-from-bracket"></i> Logout
+          </button>
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
-          <span style={{ color: '#333', fontWeight: '500' }}>Administrator</span>
-          <div style={{ position: 'relative' }}>
-            <button style={{
-              backgroundColor: '#c46b6b',
-              color: 'white',
-              border: 'none',
-              padding: '8px 16px',
-              borderRadius: '20px',
-              cursor: 'pointer',
-              fontSize: '14px'
-            }} onClick={handleLogout}>
-              Logout
-            </button>
+      </div>
+
+      {/* MAIN CONTENT */}
+      <div className="main">
+
+        {/* TOPBAR */}
+        <div className="topbar">
+          <div className="topbar-title">
+            {navItems.find(n => n.key === page)?.label || "Dashboard"}
+          </div>
+          <div className="admin-menu">
+            <span className="admin-name">
+              <i className="fa-solid fa-user" style={{ marginRight: "6px" }}></i>
+              {admin?.name}
+            </span>
           </div>
         </div>
-      </header>
 
-      {/* Main Content */}
-      <div style={{ display: 'flex', flex: 1, marginTop: '90px' }}>
-        {/* Sidebar */}
-        <aside style={{
-          width: '250px',
-          backgroundColor: '#fff',
-          boxShadow: '2px 0 10px rgba(0,0,0,0.1)',
-          padding: '20px 0',
-          position: 'fixed',
-          top: '80px',
-          left: 0,
-          height: 'calc(100vh - 0px)',
-          overflowY: 'auto'
-        }}>
-          <nav>
-            <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
-              <li>
-                <button
-                  onClick={() => setCurrentPage('home')}
-                  style={{
-                    width: '100%',
-                    padding: '15px 20px',
-                    border: 'none',
-                    backgroundColor: currentPage === 'home' ? '#FFECF2' : 'transparent',
-                    color: currentPage === 'home' ? '#c46b6b' : '#333',
-                    textAlign: 'left',
-                    cursor: 'pointer',
-                    fontSize: '16px',
-                    fontWeight: '500',
-                    transition: 'all 0.3s'
-                  }}
-                >
-                  🏠 Dashboard
-                </button>
-              </li>
-              <li>
-                <button
-                  onClick={() => setCurrentPage('menu')}
-                  style={{
-                    width: '100%',
-                    padding: '15px 20px',
-                    border: 'none',
-                    backgroundColor: currentPage === 'menu' ? '#FFECF2' : 'transparent',
-                    color: currentPage === 'menu' ? '#c46b6b' : '#333',
-                    textAlign: 'left',
-                    cursor: 'pointer',
-                    fontSize: '16px',
-                    fontWeight: '500',
-                    transition: 'all 0.3s'
-                  }}
-                >
-                  🍰 Products
-                </button>
-              </li>
-              <li>
-                <button
-                  onClick={() => setCurrentPage('orders')}
-                  style={{
-                    width: '100%',
-                    padding: '15px 20px',
-                    border: 'none',
-                    backgroundColor: currentPage === 'orders' ? '#FFECF2' : 'transparent',
-                    color: currentPage === 'orders' ? '#c46b6b' : '#333',
-                    textAlign: 'left',
-                    cursor: 'pointer',
-                    fontSize: '16px',
-                    fontWeight: '500',
-                    transition: 'all 0.3s'
-                  }}
-                >
-                  📦 Orders
-                </button>
-              </li>
-              <li>
-                <button
-                  onClick={() => setCurrentPage('users')}
-                  style={{
-                    width: '100%',
-                    padding: '15px 20px',
-                    border: 'none',
-                    backgroundColor: currentPage === 'users' ? '#FFECF2' : 'transparent',
-                    color: currentPage === 'users' ? '#c46b6b' : '#333',
-                    textAlign: 'left',
-                    cursor: 'pointer',
-                    fontSize: '16px',
-                    fontWeight: '500',
-                    transition: 'all 0.3s'
-                  }}
-                >
-                  👥 Users
-                </button>
-              </li>
-              <li>
-                <button
-                  onClick={() => setCurrentPage('category')}
-                  style={{
-                    width: '100%',
-                    padding: '15px 20px',
-                    border: 'none',
-                    backgroundColor: currentPage === 'category' ? '#FFECF2' : 'transparent',
-                    color: currentPage === 'category' ? '#c46b6b' : '#333',
-                    textAlign: 'left',
-                    cursor: 'pointer',
-                    fontSize: '16px',
-                    fontWeight: '500',
-                    transition: 'all 0.3s'
-                  }}
-                >
-                  📂 Categories
-                </button>
-              </li>
-              <li>
-                <button
-                  onClick={() => setCurrentPage('settings')}
-                  style={{
-                    width: '100%',
-                    padding: '15px 20px',
-                    border: 'none',
-                    backgroundColor: currentPage === 'settings' ? '#FFECF2' : 'transparent',
-                    color: currentPage === 'settings' ? '#c46b6b' : '#333',
-                    textAlign: 'left',
-                    cursor: 'pointer',
-                    fontSize: '16px',
-                    fontWeight: '500',
-                    transition: 'all 0.3s'
-                  }}
-                >
-                  ⚙️ Settings
-                </button>
-              </li>
-            </ul>
-          </nav>
-        </aside>
-
-        {/* Content */}
-        <main style={{
-          width: 'calc(100vw - 250px)',
-          marginLeft: '250px',
-          padding: '20px',
-          backgroundColor: '#f9f9f9',
-          minHeight: 'calc(100vh - 90px)',
-          overflowX: 'auto'
-        }}>
-          {renderPage()}
-        </main>
+        {/* PAGE CONTENT */}
+        {/* PAGE CONTENT */}
+<div className="content">
+  <div style={{ display: page === "home"       ? "block" : "none" }}><HomeAdmin /></div>
+  <div style={{ display: page === "orders"     ? "block" : "none" }}><OrdersAdmin /></div>
+  <div style={{ display: page === "menu"       ? "block" : "none" }}><MenuAdmin /></div>
+  <div style={{ display: page === "categories" ? "block" : "none" }}><CategoriesAdmin /></div>
+  <div style={{ display: page === "users"      ? "block" : "none" }}><UsersAdmin /></div>
+  <div style={{ display: page === "settings"   ? "block" : "none" }}><SettingsAdmin /></div>
+</div>
+        
       </div>
     </div>
   );
-};
+}
 
-export default AdminPanel;
+export default Admin;

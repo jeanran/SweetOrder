@@ -111,3 +111,11 @@ CORS_ALLOWED_ORIGINS = [
 ]
 
 CSRF_TRUSTED_ORIGINS = CORS_ALLOWED_ORIGINS
+
+# Cache static/media files
+CACHE_MIDDLEWARE_SECONDS = 86400  # 24 hours
+import os
+
+MEDIA_URL  = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+

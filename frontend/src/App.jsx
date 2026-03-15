@@ -16,6 +16,10 @@ import Orders from './components/Orders';
 import Settings from './components/Settings';
 
 import './App.css';
+// ✅ Admin — one import only
+import Admin        from './pages/admin/admin';    // ✅ correct path
+
+
 
 function App() {
   return (
@@ -35,6 +39,8 @@ function App() {
           <Route path="/profile" element={<Profile />} />
           <Route path="/orders" element={<Orders />} />
           <Route path="/settings" element={<Settings />} />
+
+          <Route path="/admin/dashboard" element={<Admin />} />
         </Routes>
       </BrowserRouter>
     

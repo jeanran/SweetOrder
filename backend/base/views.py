@@ -28,7 +28,7 @@ def register(request):
             }
         }, status=status.HTTP_201_CREATED)
 
-    errors = serializer.errors
+    errors      = serializer.errors
     first_error = next(iter(errors.values()))[0]
     return Response({'error': str(first_error)}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -124,7 +124,7 @@ def profile(request):
         return Response({'message': 'Account deleted.'})
 
 
-# ─── PRODUCTS ─────────────────────────────────────────────────
+# ─── PRODUCTS (public) ────────────────────────────────────────
 
 class ProductViewSet(viewsets.ModelViewSet):
     serializer_class   = ProductSerializer
@@ -132,15 +132,12 @@ class ProductViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         queryset = Product.objects.filter(is_available=True)
-
         search   = self.request.query_params.get('search')
         category = self.request.query_params.get('category')
-
         if search:
             queryset = queryset.filter(product_name__icontains=search)
         if category:
             queryset = queryset.filter(category=category)
-
         return queryset
 
 
@@ -331,3 +328,257 @@ def user_orders(request):
 
     serializer = OrderSerializer(orders, many=True)
     return Response(serializer.data)
+
+
+# ─── ADMIN ORDERS ─────────────────────────────────────────────
+
+@api_view(['GET'])
+def admin_orders(request):
+    user_id = (
+        request.session.get('user_id') or
+        request.query_params.get('user_id')
+    )
+
+    try:
+        admin = User.objects.get(user_id=user_id)
+        if admin.role != 'admin':
+            return Response({'error': 'Admin only.'}, status=403)
+    except User.DoesNotExist:
+        return Response({'error': 'Unauthorized.'}, status=401)
+
+    orders = Order.objects.all().select_related('user').prefetch_related(
+        'order_details__product'
+    ).order_by('-order_date')
+
+    data = [{
+        'order_id':         o.order_id,
+        'user_id':          o.user_id,
+        'user_name':        o.user.name,
+        'order_date':       o.order_date,
+        'total_amount':     str(o.total_amount),
+        'status':           o.status,
+        'delivery_address': o.delivery_address,
+        'order_details': [{
+            'order_detail_id': d.order_detail_id,
+            'product_name':    d.product.product_name,
+            'quantity':        d.quantity,
+            'price':           str(d.price),
+            'subtotal':        str(d.subtotal),
+        } for d in o.order_details.all()]
+    } for o in orders]
+
+    return Response(data)
+
+
+@api_view(['PATCH'])
+def admin_order_update(request, order_id):
+    user_id = (
+        request.session.get('user_id') or
+        request.data.get('user_id') or
+        request.query_params.get('user_id')
+    )
+
+    try:
+        admin = User.objects.get(user_id=user_id)
+        if admin.role != 'admin':
+            return Response({'error': 'Admin only.'}, status=403)
+    except User.DoesNotExist:
+        return Response({'error': 'Unauthorized.'}, status=401)
+
+    try:
+        order = Order.objects.get(order_id=order_id)
+    except Order.DoesNotExist:
+        return Response({'error': 'Order not found.'}, status=404)
+
+    new_status = request.data.get('status')
+    valid = ['pending', 'processing', 'shipped', 'delivered', 'cancelled']
+    if new_status not in valid:
+        return Response({'error': 'Invalid status.'}, status=400)
+
+    order.status = new_status
+    order.save()
+
+    return Response({
+        'message':  'Status updated.',
+        'order_id': order.order_id,
+        'status':   order.status,
+    })
+
+
+# ─── ADMIN USERS ──────────────────────────────────────────────
+
+@api_view(['GET'])
+def admin_users(request):
+    user_id = (
+        request.session.get('user_id') or
+        request.query_params.get('user_id')
+    )
+
+    try:
+        admin = User.objects.get(user_id=user_id)
+        if admin.role != 'admin':
+            return Response({'error': 'Admin only.'}, status=403)
+    except User.DoesNotExist:
+        return Response({'error': 'Unauthorized.'}, status=401)
+
+    users = User.objects.filter(role='customer').order_by('-created_at')
+    data  = [{
+        'user_id':    u.user_id,
+        'name':       u.name,
+        'email':      u.email,
+        'role':       u.role,
+        'created_at': u.created_at,
+    } for u in users]
+
+    return Response(data)
+
+
+@api_view(['DELETE'])
+def admin_user_detail(request, target_id):
+    user_id = (
+        request.session.get('user_id') or
+        request.data.get('user_id')
+    )
+
+    try:
+        admin = User.objects.get(user_id=user_id)
+        if admin.role != 'admin':
+            return Response({'error': 'Admin only.'}, status=403)
+    except User.DoesNotExist:
+        return Response({'error': 'Unauthorized.'}, status=401)
+
+    try:
+        user = User.objects.get(user_id=target_id)
+        user.delete()
+        return Response({'message': 'User deleted.'})
+    except User.DoesNotExist:
+        return Response({'error': 'User not found.'}, status=404)
+
+
+# ─── ADMIN PRODUCTS ───────────────────────────────────────────
+@api_view(['GET', 'POST'])
+def admin_products(request):
+    user_id = (
+        request.session.get('user_id') or
+        request.data.get('user_id') or
+        request.query_params.get('user_id')
+    )
+    try:
+        user_id = int(str(user_id).strip())
+    except (ValueError, TypeError):
+        return Response({'error': 'Invalid user_id.'}, status=400)
+
+    try:
+        admin = User.objects.get(user_id=user_id)
+        if admin.role != 'admin':
+            return Response({'error': 'Admin only.'}, status=403)
+    except User.DoesNotExist:
+        return Response({'error': 'Unauthorized.'}, status=401)
+
+    if request.method == 'GET':
+        products   = Product.objects.all().order_by('-product_id')
+        serializer = ProductSerializer(
+            products, many=True,
+            context={'request': request}
+        )
+        return Response(serializer.data)
+
+    if request.method == 'POST':
+        # ✅ create product manually to handle file upload properly
+        try:
+            product = Product.objects.create(
+                product_name = request.data.get('product_name'),
+                description  = request.data.get('description', ''),
+                category     = request.data.get('category', 'birthday'),
+                price        = request.data.get('price'),
+                stock        = int(request.data.get('stock', 10)),
+                is_available = request.data.get('is_available') in
+                               [True, 'true', 'True', '1', 1],
+            )
+            # ✅ save image separately from FILES
+            if 'image' in request.FILES:
+                product.image = request.FILES['image']
+                product.save()
+
+            image_url = None
+            if product.image:
+                image_url = request.build_absolute_uri(product.image.url)
+
+            return Response({
+                'product_id':   product.product_id,
+                'product_name': product.product_name,
+                'description':  product.description,
+                'category':     product.category,
+                'price':        str(product.price),
+                'stock':        product.stock,
+                'is_available': product.is_available,
+                'image_url':    image_url,
+            }, status=201)
+
+        except Exception as e:
+            return Response({'error': str(e)}, status=400)
+        
+@api_view(['PATCH', 'DELETE'])
+def admin_product_detail(request, product_id):
+    user_id = (
+        request.session.get('user_id') or
+        request.data.get('user_id') or
+        request.query_params.get('user_id')
+    )
+    try:
+        user_id = int(str(user_id).strip())
+    except (ValueError, TypeError):
+        return Response({'error': 'Invalid user_id.'}, status=400)
+
+    try:
+        admin = User.objects.get(user_id=user_id)
+        if admin.role != 'admin':
+            return Response({'error': 'Admin only.'}, status=403)
+    except User.DoesNotExist:
+        return Response({'error': 'Unauthorized.'}, status=401)
+
+    try:
+        product = Product.objects.get(product_id=product_id)
+    except Product.DoesNotExist:
+        return Response({'error': 'Product not found.'}, status=404)
+
+    if request.method == 'PATCH':
+        if 'product_name' in request.data:
+            product.product_name = request.data['product_name']
+        if 'description' in request.data:
+            product.description  = request.data['description']
+        if 'category' in request.data:
+            product.category     = request.data['category']
+        if 'price' in request.data:
+            product.price        = request.data['price']
+        if 'stock' in request.data:
+            product.stock        = int(request.data['stock'])
+        if 'is_available' in request.data:
+            val = request.data['is_available']
+            product.is_available = val in [True, 'true', 'True', '1', 1]
+
+        # ✅ handle image from FILES not from data
+        if 'image' in request.FILES:
+            product.image = request.FILES['image']
+
+        product.save()
+
+        image_url = None
+        if product.image:
+            image_url = request.build_absolute_uri(product.image.url)
+
+        return Response({
+            'product_id':   product.product_id,
+            'product_name': product.product_name,
+            'description':  product.description,
+            'category':     product.category,
+            'price':        str(product.price),
+            'stock':        product.stock,
+            'is_available': product.is_available,
+            'image_url':    image_url,   # ✅ always full URL
+        })
+
+    if request.method == 'DELETE':
+        product.delete()
+        return Response({'message': 'Product deleted.'})
+

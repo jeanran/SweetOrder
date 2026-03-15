@@ -27,52 +27,34 @@ class UserAdmin(admin.ModelAdmin):
 
 @admin.register(Product)
 class ProductAdmin(admin.ModelAdmin):
-    list_display  = ['product_id', 'product_name', 'category', 'price', 'stock', 'is_available']
-    list_filter   = ['category', 'is_available']
-    search_fields = ['product_name', 'description']
-    ordering      = ['-product_id']
+    list_display   = ['product_id', 'product_name', 'category',
+                      'price', 'stock', 'is_available', 'image_preview']
+    list_filter    = ['category', 'is_available']
+    search_fields  = ['product_name', 'description']
+    ordering       = ['-product_id']
+    list_editable  = ['price', 'stock', 'is_available']
 
-    # ✅ FIXED: removed product_name from list_editable
-    # product_name must be clicked to open full edit form
-    # list_editable cannot include the first column used as a link
-    list_editable = ['price', 'stock', 'is_available']
-
-    # ✅ FIXED: all fields explicitly listed so nothing is hidden
-    fields = (
-        'product_name',
-        'description',
-        'category',
-        'image',
-        'price',
-        'stock',
-        'is_available',
-    )
-
-    # ✅ show image preview in the edit form
+    # ✅ FIXED: no class-level 'fields' — use get_fields only
     readonly_fields = ['image_preview']
 
     def get_fields(self, request, obj=None):
-        fields = [
-            'product_name',
-            'description',
-            'category',
-            'price',
-            'stock',
-            'is_available',
-            'image',
+        # ✅ show image_preview only when editing existing product
+        base = [
+            'product_name', 'description', 'category',
+            'price', 'stock', 'is_available', 'image',
         ]
         if obj and obj.image:
-            fields.insert(fields.index('image'), 'image_preview')
-        return fields
+            base.insert(base.index('image'), 'image_preview')
+        return base
 
     def image_preview(self, obj):
         from django.utils.html import format_html
-        if obj.image:
+        if obj and obj.image:
             return format_html(
                 '<img src="{}" style="max-height:200px; border-radius:8px;"/>',
                 obj.image.url
             )
-        return 'No image uploaded'
+        return 'No image yet'
     image_preview.short_description = 'Current Image'
 
 
@@ -115,7 +97,8 @@ class OrderAdmin(admin.ModelAdmin):
 
 @admin.register(Cart)
 class CartAdmin(admin.ModelAdmin):
-    list_display    = ['cart_id', 'user', 'product', 'quantity', 'subtotal_display', 'added_at']
+    list_display    = ['cart_id', 'user', 'product', 'quantity',
+                       'subtotal_display', 'added_at']
     list_filter     = ['added_at']
     search_fields   = ['user__name', 'user__email', 'product__product_name']
     ordering        = ['-added_at']
@@ -130,7 +113,8 @@ class CartAdmin(admin.ModelAdmin):
 
 @admin.register(OrderDetail)
 class OrderDetailAdmin(admin.ModelAdmin):
-    list_display    = ['order_detail_id', 'order', 'product', 'quantity', 'price', 'subtotal_display']
+    list_display    = ['order_detail_id', 'order', 'product',
+                       'quantity', 'price', 'subtotal_display']
     search_fields   = ['order__order_id', 'product__product_name']
     ordering        = ['order']
     readonly_fields = ['order_detail_id', 'subtotal_display']

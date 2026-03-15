@@ -180,9 +180,7 @@ function Homepage() {
               <Link to="/products">
                 <button className="order-btn">Order Now</button>
               </Link>
-              <Link to="/products">
-                <button className="view-btn">View Cakes</button>
-              </Link>
+              
             </div>
           </div>
 

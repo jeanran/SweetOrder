@@ -56,22 +56,24 @@ class RegisterSerializer(serializers.ModelSerializer):
 # ─── PRODUCT ──────────────────────────────────────────────────
 
 class ProductSerializer(serializers.ModelSerializer):
-    image_url = serializers.SerializerMethodField()   # ✅ returns full usable URL
+    image_url = serializers.SerializerMethodField()
 
     class Meta:
-        model = Product
+        model  = Product
         fields = [
             'product_id', 'product_name', 'description',
             'price', 'category', 'image_url',
             'stock', 'is_available'
         ]
-        # ✅ raw 'image' field excluded — use image_url instead
 
     def get_image_url(self, obj):
+        if not obj.image:
+            return None
         request = self.context.get('request')
-        if obj.image:
-            return request.build_absolute_uri(obj.image.url) if request else obj.image.url
-        return None
+        if request:
+            return request.build_absolute_uri(obj.image.url)
+        # ✅ always return something even without request context
+        return f"http://127.0.0.1:8000{obj.image.url}"
 
 
 # ─── CART ─────────────────────────────────────────────────────
