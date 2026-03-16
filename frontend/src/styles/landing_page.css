@@ -22,7 +22,7 @@ html {
 }
 
 body{
-    padding-top: 100px; /* INCREASED FROM 90px TO 100px */
+    padding-top: 100px; 
     opacity: 0;
     transition: opacity 0.5s ease;
 }
@@ -133,7 +133,7 @@ color:#c46b6b;
     justify-content: center;
     align-items:center;
     flex-wrap: wrap;
-    overflow: visible;  /* 👈 add this so cake can overflow */
+    overflow: visible;  
 }
 
 

@@ -17,7 +17,7 @@ function Settings() {
   });
 
   useEffect(() => {
-    document.body.classList.add('page-loaded');   // ✅ fix blank page
+    document.body.classList.add('page-loaded');   
 
     const stored = localStorage.getItem('user');
     if (!stored) {
@@ -117,7 +117,7 @@ function Settings() {
   return (
     <div style={{ minHeight: '100vh', background: '#fdf6f8' }}>
 
-      {/* ✅ NAVBAR */}
+      {/*  NAVBAR */}
       <header style={{
         background: '#fff', padding: '14px 28px',
         display: 'flex', alignItems: 'center',

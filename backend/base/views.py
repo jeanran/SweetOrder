@@ -484,7 +484,7 @@ def admin_products(request):
         return Response(serializer.data)
 
     if request.method == 'POST':
-        # ✅ create product manually to handle file upload properly
+        
         try:
             product = Product.objects.create(
                 product_name = request.data.get('product_name'),
@@ -557,7 +557,7 @@ def admin_product_detail(request, product_id):
             val = request.data['is_available']
             product.is_available = val in [True, 'true', 'True', '1', 1]
 
-        # ✅ handle image from FILES not from data
+        
         if 'image' in request.FILES:
             product.image = request.FILES['image']
 
@@ -575,7 +575,7 @@ def admin_product_detail(request, product_id):
             'price':        str(product.price),
             'stock':        product.stock,
             'is_available': product.is_available,
-            'image_url':    image_url,   # ✅ always full URL
+            'image_url':    image_url,   
         })
 
     if request.method == 'DELETE':

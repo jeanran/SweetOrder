@@ -31,7 +31,7 @@ class User(models.Model):
 
 
 class Product(models.Model):
-    CATEGORY_CHOICES = [                            # ✅ ADD: validates category values
+    CATEGORY_CHOICES = [                            
         ('birthday', 'Birthday'),
         ('wedding', 'Wedding'),
         ('anniversary', 'Anniversary'),
@@ -46,7 +46,7 @@ class Product(models.Model):
     category = models.CharField(max_length=100, choices=CATEGORY_CHOICES)
     image = models.ImageField(upload_to='products/', null=True, blank=True)
     stock = models.IntegerField(default=0)
-    is_available = models.BooleanField(default=True)    # ✅ ADD: filter products in views
+    is_available = models.BooleanField(default=True)    
 
     def __str__(self):
         return self.product_name
@@ -71,7 +71,7 @@ class Order(models.Model):
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
     delivery_address = models.TextField()
 
-    def recalculate_total(self):                        # ✅ ADD: used in checkout view
+    def recalculate_total(self):                        
         self.total_amount = sum(
             d.price * d.quantity for d in self.order_details.all()
         )
@@ -92,7 +92,7 @@ class OrderDetail(models.Model):
     price = models.DecimalField(max_digits=10, decimal_places=2)
 
     @property
-    def subtotal(self):                                 # ✅ ADD: used in cart/order views
+    def subtotal(self):                                
         return self.price * self.quantity
 
     def __str__(self):
@@ -109,16 +109,16 @@ class Cart(models.Model):
     quantity = models.IntegerField(default=1)
     added_at = models.DateTimeField(auto_now_add=True, null=True)
     @property
-    def subtotal(self):                                 # ✅ ADD: price × qty per item
+    def subtotal(self):                                 
         return self.product.price * self.quantity
 
     @classmethod
-    def get_cart_total(cls, user):                      # ✅ ADD: used in CartView GET
+    def get_cart_total(cls, user):                     
         items = cls.objects.filter(user=user).select_related('product')
         return sum(item.subtotal for item in items)
 
     @classmethod
-    def clear_cart(cls, user):                          # ✅ ADD: called after checkout
+    def clear_cart(cls, user):                          
         cls.objects.filter(user=user).delete()
 
     def __str__(self):
@@ -127,4 +127,4 @@ class Cart(models.Model):
     class Meta:
         db_table = 'cart'
         unique_together = ['user', 'product']
-        ordering = ['-added_at']                        # ✅ ADD: newest items first
+        ordering = ['-added_at']                        

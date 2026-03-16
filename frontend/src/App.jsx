@@ -16,8 +16,8 @@ import Orders from './components/Orders';
 import Settings from './components/Settings';
 
 import './App.css';
-// ✅ Admin — one import only
-import Admin        from './pages/admin/admin';    // ✅ correct path
+
+import Admin        from './pages/admin/admin';   
 
 
 

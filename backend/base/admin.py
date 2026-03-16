@@ -34,11 +34,11 @@ class ProductAdmin(admin.ModelAdmin):
     ordering       = ['-product_id']
     list_editable  = ['price', 'stock', 'is_available']
 
-    # ✅ FIXED: no class-level 'fields' — use get_fields only
+   
     readonly_fields = ['image_preview']
 
     def get_fields(self, request, obj=None):
-        # ✅ show image_preview only when editing existing product
+       
         base = [
             'product_name', 'description', 'category',
             'price', 'stock', 'is_available', 'image',

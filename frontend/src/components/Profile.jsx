@@ -97,7 +97,7 @@ function Profile() {
   return (
     <div className="profile-page">
 
-      {/* ✅ SAME NAVBAR AS HOMEPAGE */}
+      {/* SAME NAVBAR AS HOMEPAGE */}
       <header className={`navbar ${scrolled ? 'scrolled' : ''}`}>
         <div className="container nav-container">
           <div className="logo">
@@ -153,7 +153,7 @@ function Profile() {
         </div>
       </header>
 
-      {/* ✅ CONTENT */}
+      {/* CONTENT */}
       <div className="profile-content">
         <div className="profile-grid">
 

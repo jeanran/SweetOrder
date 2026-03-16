@@ -13,7 +13,7 @@ function Homepage() {
   useEffect(() => {
     document.body.classList.add('page-loaded');
 
-    // ✅ load user from localStorage
+    // load user from localStorage
     const stored = localStorage.getItem('user');
     if (stored) {
       const parsedUser = JSON.parse(stored);
@@ -27,7 +27,7 @@ function Homepage() {
     const handleScroll = () => setScrolled(window.scrollY > 50);
     window.addEventListener('scroll', handleScroll);
 
-    // ✅ close dropdown when clicking outside
+    
     const handleClickOutside = (e) => {
       if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
         setDropdownOpen(false);
@@ -50,13 +50,13 @@ function Homepage() {
     } finally {
       localStorage.removeItem('user');
       localStorage.removeItem('userId');
-      setUser(null); // ✅ clear user state
+      setUser(null); 
       setDropdownOpen(false);
       navigate('/login');
     }
   };
 
-  // ✅ get initials for avatar (e.g. "Shella Mae" → "SM")
+  
   const getInitials = (name) => {
     if (!name) return '?';
     return name
@@ -91,7 +91,7 @@ function Homepage() {
               <img className="cart-icon" src="/assets/cart.png" alt="Cart" />
             </Link>
 
-            {/* ✅ PROFILE DROPDOWN */}
+            {/* PROFILE DROPDOWN */}
             {user ? (
               <div className="profile-wrapper" ref={dropdownRef}>
 
@@ -157,7 +157,7 @@ function Homepage() {
               </div>
 
             ) : (
-              // ✅ show Login button if not logged in
+              
               <Link to="/login" className="nav-login-btn">
                 Login
               </Link>

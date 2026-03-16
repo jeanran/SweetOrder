@@ -15,7 +15,7 @@
 /* ── GRID — side by side ──────────────────────────── */
 .profile-grid {
   display: grid;
-  grid-template-columns: 320px 1fr;    /* ✅ fixed: side by side */
+  grid-template-columns: 320px 1fr;   
   gap: 28px;
   align-items: start;
 }
@@ -205,7 +205,7 @@
 
 @media (max-width: 768px) {
   .profile-grid {
-    grid-template-columns: 1fr;   /* stack on mobile */
+    grid-template-columns: 1fr;   
   }
   .profile-content {
     padding: 24px 20px;

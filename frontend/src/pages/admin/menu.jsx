@@ -2,13 +2,13 @@ import React, { useState, useEffect, useCallback, memo } from "react";
 import api from "../../services/api";
 import "../../styles/Admin.css";
 
-// ✅ Memoized row — image won't reload unless THIS product changes
+
 const ProductRow = memo(({ product, index, onEdit, onDelete }) => {
   const [imgSrc, setImgSrc] = useState(
     product.image_url || "/assets/placeholder.jpg"
   );
 
-  // ✅ update image if product.image_url changes after edit
+ 
   useEffect(() => {
     if (product.image_url) setImgSrc(product.image_url);
   }, [product.image_url]);
@@ -149,7 +149,7 @@ function MenuAdmin() {
         `/admin/products/${editItem.product_id}/`, payload,
         { headers: { "Content-Type": "multipart/form-data" } }
       );
-      // ✅ update only this product in state
+      //  update only this product in state
       setProducts(prev =>
         prev.map(p => p.product_id === editItem.product_id ? res.data : p)
       );
@@ -158,10 +158,10 @@ function MenuAdmin() {
         "/admin/products/", payload,
         { headers: { "Content-Type": "multipart/form-data" } }
       );
-      // ✅ add new product to top of list
+      //  add new product to top of list
       setProducts(prev => [res.data, ...prev]);
     }
-    setShowModal(false);   // ✅ close modal
+    setShowModal(false);   
 
   } catch (err) {
     console.error("Save error:", err.response?.data || err);
@@ -237,7 +237,7 @@ function MenuAdmin() {
                 </td>
               </tr>
             ) : filtered.map((product, i) => (
-              // ✅ ProductRow is memoized — won't re-render unless its own data changes
+             
               <ProductRow
                 key={product.product_id}
                 product={product}
@@ -250,7 +250,7 @@ function MenuAdmin() {
         </table>
       )}
 
-      {/* Modal only mounts when showModal=true, unmounts when false */}
+    
       {showModal && (
         <div className="modal" style={{ display: "flex" }}>
           <div className="modal-content">

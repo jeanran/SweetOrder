@@ -19,19 +19,19 @@ function Login() {
   useEffect(() => {
     document.body.classList.add('page-loaded');
 
-    // ✅ FIXED: only check user, no token needed
+    
     const user = localStorage.getItem('user');
     if (user) {
       try {
         const userData = JSON.parse(user);
-        // ✅ FIXED: role-based redirect
+      
         if (userData?.role === 'admin') {
           navigate('/admin/dashboard', { replace: true });
         } else if (userData?.role === 'customer') {
           navigate('/homepage', { replace: true });
         }
       } catch (err) {
-        // Corrupted data — wipe it
+        
         localStorage.removeItem('user');
         localStorage.removeItem('userId');
       }
@@ -44,6 +44,8 @@ function Login() {
     setFormData(prev => ({ ...prev, [e.target.name]: e.target.value }));
     setError('');
   };
+  
+/*React talks to the backend.*/
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -51,7 +53,7 @@ function Login() {
     setLoading(true);
 
     try {
-      // ✅ FIXED: correct endpoint
+      
       const response = await api.post('/auth/login/', {
         email: formData.email,
         password: formData.password
@@ -60,11 +62,11 @@ function Login() {
       if (response.status === 200 && response.data.user) {
         const user = response.data.user;
 
-        // ✅ FIXED: no fake token, correct user_id field
+        
         localStorage.setItem('user', JSON.stringify(user));
         localStorage.setItem('userId', user.user_id);
 
-        // ✅ FIXED: role-based redirect
+        
         if (user.role === 'admin') {
           navigate('/admin/dashboard', { replace: true });
         } else {

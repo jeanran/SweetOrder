@@ -22,7 +22,7 @@ html {
 }
 
 body{
-    padding-top: 100px; /* INCREASED FROM 90px TO 100px */
+    padding-top: 100px; 
     opacity: 0;
     transition: opacity 0.5s ease;
 }

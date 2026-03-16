@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import api from '../services/api'; // Import the api service
+import api from '../services/api'; 
 import '../styles/register.css';
 
 function Register() {
@@ -40,7 +40,7 @@ function Register() {
       ...formData,
       [e.target.name]: e.target.value
     });
-    // Clear error when user types
+    
     setError("");
   };
 
@@ -84,7 +84,7 @@ function Register() {
       console.log('Registration response:', response.data);
 
       if (response.status === 201 || response.status === 200) {
-        // Success message
+        
         alert("Account created successfully! Please login.");
         
         // Redirect to login page with email pre-filled
@@ -99,9 +99,9 @@ function Register() {
     } catch (err) {
       console.error("Registration error:", err);
       
-      // Better error handling similar to Login.jsx
+      
       if (err.response) {
-        // The request was made and the server responded with an error status
+        
         console.log('Error response data:', err.response.data);
         console.log('Error response status:', err.response.status);
         
@@ -128,10 +128,10 @@ function Register() {
           setError(`Server error (${err.response.status}). Please try again.`);
         }
       } else if (err.request) {
-        // The request was made but no response was received
+        
         setError("Cannot connect to server. Make sure Django is running on port 8000.");
       } else {
-        // Something happened in setting up the request
+        
         setError("An error occurred. Please try again.");
       }
     } finally {

@@ -13,7 +13,7 @@ class UserSerializer(serializers.ModelSerializer):
             'user_id':    {'read_only': True},
             'created_at': {'read_only': True},
         }
-        # ✅ password intentionally excluded — never send it to frontend
+       
 
 
 # ─── REGISTER ─────────────────────────────────────────────────
@@ -43,12 +43,11 @@ class RegisterSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         validated_data.pop('confirm_password')
-        # ✅ FIXED: don't call make_password() here
-        # model's save() already hashes it — calling it here causes double hashing
+        
         return User.objects.create(
             name=validated_data['name'],
             email=validated_data['email'],
-            password=validated_data['password'],   # model.save() will hash this
+            password=validated_data['password'],   
             role=validated_data.get('role', 'customer')
         )
 
@@ -72,14 +71,14 @@ class ProductSerializer(serializers.ModelSerializer):
         request = self.context.get('request')
         if request:
             return request.build_absolute_uri(obj.image.url)
-        # ✅ always return something even without request context
+        
         return f"http://127.0.0.1:8000{obj.image.url}"
 
 
 # ─── CART ─────────────────────────────────────────────────────
 
 class CartSerializer(serializers.ModelSerializer):
-    # ✅ FIXED: include product details React needs to display the cart
+    
     product_name = serializers.CharField(
         source='product.product_name', read_only=True
     )
@@ -105,8 +104,7 @@ class CartSerializer(serializers.ModelSerializer):
         return None
 
     def get_subtotal(self, obj):
-        return str(obj.subtotal)   # uses @property subtotal from Cart model
-
+        return str(obj.subtotal)  
 
 # ─── ORDER ────────────────────────────────────────────────────
 
@@ -128,12 +126,11 @@ class OrderDetailSerializer(serializers.ModelSerializer):
 
 
 class OrderSerializer(serializers.ModelSerializer):
-    order_details = OrderDetailSerializer(many=True, read_only=True)  # ✅ nested details
-
+    order_details = OrderDetailSerializer(many=True, read_only=True)  
     class Meta:
         model = Order
         fields = [
             'order_id', 'user_id', 'order_date',
             'total_amount', 'status', 'delivery_address',
-            'order_details'                                # ✅ includes line items
+            'order_details'                                
         ]

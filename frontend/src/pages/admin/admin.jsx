@@ -3,7 +3,6 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../../services/api";
 
-// ✅ all files are flat inside src/pages/admin/
 import HomeAdmin       from "./home";
 import OrdersAdmin     from "./orders";
 import MenuAdmin       from "./menu";
@@ -131,7 +130,7 @@ function Admin() {
           </div>
         </div>
 
-        {/* PAGE CONTENT */}
+        
         {/* PAGE CONTENT */}
 <div className="content">
   <div style={{ display: page === "home"       ? "block" : "none" }}><HomeAdmin /></div>

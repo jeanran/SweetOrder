@@ -9,7 +9,7 @@ function Orders() {
   const [error, setError]     = useState('');
 
   useEffect(() => {
-    document.body.classList.add('page-loaded');     // ✅ fix blank page
+    document.body.classList.add('page-loaded');     
 
     const storedUser = localStorage.getItem('user');
     if (!storedUser) { navigate('/login'); return; }
@@ -76,7 +76,7 @@ function Orders() {
         </Link>
       </header>
 
-      {/* ✅ RESPONSIVE CONTAINER */}
+      {/* RESPONSIVE CONTAINER */}
       <div style={{
         maxWidth: '900px',
         margin: '0 auto',
@@ -151,7 +151,7 @@ function Orders() {
           </div>
         )}
 
-        {/* ✅ RESPONSIVE ORDER CARDS GRID */}
+        {/* RESPONSIVE ORDER CARDS GRID */}
         {!loading && !error && orders.length > 0 && (
           <div style={{
             display: 'grid',
@@ -285,7 +285,7 @@ function Orders() {
           </div>
         )}
 
-        {/* ✅ Bottom padding for mobile */}
+        {/* Bottom padding for mobile */}
         <div style={{ height: '40px' }} />
       </div>
     </div>

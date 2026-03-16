@@ -3,15 +3,15 @@ import { Link } from 'react-router-dom';
 import '../styles/Contacts.css';
 
 function Contacts() {
-  // State for navbar scroll effect
+  
   const [scrolled, setScrolled] = useState(false);
 
-  // Effect for body opacity and scroll listener
+  
   useEffect(() => {
-    // Add the page-loaded class to body when component mounts
+    
     document.body.classList.add('page-loaded');
     
-    // Scroll event listener for navbar
+    
     const handleScroll = () => {
       if (window.scrollY > 50) {
         setScrolled(true);
@@ -22,27 +22,27 @@ function Contacts() {
 
     window.addEventListener('scroll', handleScroll);
     
-    // Clean up when component unmounts
+    
     return () => {
       document.body.classList.remove('page-loaded');
       window.removeEventListener('scroll', handleScroll);
     };
   }, []);
 
-  // Function for thumbnail gallery
+  
   const changeImage = (event, productCard) => {
     const mainImage = productCard.querySelector('.mainImage');
     const thumbnails = productCard.querySelectorAll('.thumb');
     
-    // Update main image
+    
     mainImage.src = event.target.src;
     
-    // Update active class on thumbnails
+    
     thumbnails.forEach(thumb => thumb.classList.remove('active'));
     event.target.classList.add('active');
   };
 
-  // Function for product scroll
+  
   const scrollProducts = (direction) => {
     const scrollContainer = document.getElementById('productScroll');
     const scrollAmount = 400;

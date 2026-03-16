@@ -1,7 +1,7 @@
 /* ── LAYOUT ─────────────────────────────────────────── */
 .dashboard {
   display: flex;
-  width: 100vw;          /* ✅ full viewport width */
+  width: 100vw;          
   min-height: 100vh;
   background: #f4f6f9;
   font-family: 'Segoe UI', sans-serif;
@@ -11,7 +11,7 @@
 /* ── SIDEBAR ─────────────────────────────────────────── */
 .sidebar {
   width: 240px;
-  min-width: 240px;      /* ✅ don't shrink */
+  min-width: 240px;      
   background: #1e1b2e;
   color: #fff;
   display: flex;
@@ -62,8 +62,8 @@
   flex-direction: column;
   overflow-y: auto;
   overflow-x: hidden;
-  min-width: 0;          /* ✅ allows flex child to shrink */
-  width: calc(100vw - 240px);  /* ✅ fill remaining space */
+  min-width: 0;          
+  width: calc(100vw - 240px);  
 }
 
 /* ── TOPBAR ──────────────────────────────────────────── */
@@ -204,8 +204,8 @@
   object-fit: cover;
   border-radius: 8px;
   border: 1px solid #f0f0f0;
-  background: #f5f5f5;          /* ✅ gray placeholder while loading */
-  transition: opacity 0.15s;    /* ✅ smooth fade in */
+  background: #f5f5f5;          
+  transition: opacity 0.15s;  
 }
 
 
