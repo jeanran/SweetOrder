@@ -12,6 +12,13 @@ body {
   background: linear-gradient(135deg, #fdf6f6 0%, #FFECF2 100%);
   display: flex;
   flex-direction: column;
+  overflow: hidden;
+  position: fixed;
+  inset: 0;
+
+
+
+
 }
 
 /* ── BACK BUTTON ──────────────────────────────────── */

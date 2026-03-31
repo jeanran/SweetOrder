@@ -40,24 +40,30 @@ function Checkout() {
   const handleInput   = (e) => setFormData(p => ({ ...p, [e.target.name]: e.target.value }));
   const handlePayment = (e) => setFormData(p => ({ ...p, paymentMethod: e.target.value }));
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    if (cartItems.length === 0) { setError('Your cart is empty.'); return; }
-    setSubmitting(true);
-    setError('');
-    try {
-      const res = await api.post('/checkout/', {
-        user_id:          localStorage.getItem('userId'),
-        delivery_address: formData.address,
+const handleSubmit = async (e) => {
+  e.preventDefault();
+  if (cartItems.length === 0) { setError('Your cart is empty.'); return; }
+  setSubmitting(true);
+  setError('');
+  try {
+    const res = await api.post('/checkout/', {
+      user_id:          localStorage.getItem('userId'),
+      delivery_address: formData.address,
+    });
+    if (res.status === 201) {
+      //  navigate to confirmation with order data
+      navigate('/order-confirmation', {
+        state: {
+          orderId: res.data.order_id,
+          total:   res.data.total,
+          items:   cartItems,         
+        }
       });
-      if (res.status === 201) {
-        alert(`Order #${res.data.order_id} placed! Total: ₱${res.data.total}`);
-        navigate('/orders');
-      }
-    } catch (err) {
-      setError(err.response?.data?.error || 'Failed to place order. Please try again.');
-    } finally { setSubmitting(false); }
-  };
+    }
+  } catch (err) {
+    setError(err.response?.data?.error || 'Failed to place order. Please try again.');
+  } finally { setSubmitting(false); }
+};
 
   const fields = [
     { label: 'Full Name',     name: 'fullName', type: 'text',  placeholder: 'Enter your full name' },

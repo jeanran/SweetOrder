@@ -176,14 +176,14 @@ function Cart() {
             <span>₱{(subtotal + deliveryFee).toFixed(2)}</span>
           </div>
 
-          <Link to="/checkout">
-            <button
-              className="checkout-btn"
-              disabled={cartItems.length === 0}
-            >
-              <i className="fa-solid fa-bag-shopping"></i> Checkout Now
-            </button>
-          </Link>
+          <button
+  className="checkout-btn"
+  disabled={cartItems.length === 0}
+  onClick={() => navigate('/checkout')}
+>
+  <i className="fa-solid fa-bag-shopping"></i> Checkout Now
+</button>
+
 
           <Link to="/products" className="continue-link">
             ← Continue Shopping

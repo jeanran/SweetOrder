@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import api from '../services/api'; 
+import api from '../services/api';
 import '../styles/register.css';
 
 function Register() {
@@ -18,29 +18,29 @@ function Register() {
 
   useEffect(() => {
     document.body.classList.add('page-loaded');
-    
-    // Check if already logged in
+
     const user = localStorage.getItem('user');
     if (user) {
-      const userData = JSON.parse(user);
-      if (userData.role === 'admin') {
-        navigate('/admin/dashboard');
-      } else {
-        navigate('/customer/home');
+      try {
+        const userData = JSON.parse(user);
+        if (userData.role === 'admin') {
+          navigate('/admin/dashboard', { replace: true });
+        } else {
+          navigate('/homepage', { replace: true });
+        }
+      } catch {
+        localStorage.removeItem('user');
+        localStorage.removeItem('userId');
       }
     }
-    
+
     return () => {
       document.body.classList.remove('page-loaded');
     };
   }, [navigate]);
 
   const handleChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value
-    });
-    
+    setFormData({ ...formData, [e.target.name]: e.target.value });
     setError("");
   };
 
@@ -49,21 +49,18 @@ function Register() {
     setLoading(true);
     setError("");
 
-    // Check password match
     if (formData.password !== formData.confirm_password) {
       setError("Passwords do not match");
       setLoading(false);
       return;
     }
 
-    // Check password length
     if (formData.password.length < 6) {
       setError("Password must be at least 6 characters long");
       setLoading(false);
       return;
     }
 
-    // Email validation (basic)
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(formData.email)) {
       setError("Please enter a valid email address");
@@ -72,7 +69,6 @@ function Register() {
     }
 
     try {
-      // Using api service instead of fetch directly
       const response = await api.post('/auth/register/', {
         name: formData.name,
         email: formData.email,
@@ -81,57 +77,41 @@ function Register() {
         role: "customer"
       });
 
-      console.log('Registration response:', response.data);
-
       if (response.status === 201 || response.status === 200) {
-        
-        alert("Account created successfully! Please login.");
-        
-        // Redirect to login page with email pre-filled
-        navigate("/login", { 
-          state: { 
+        // ✅ No alert() — navigate directly with a success message
+        navigate("/login", {
+          replace: true,
+          state: {
             email: formData.email,
-            message: "Registration successful! Please login." 
-          } 
+            message: "Account created successfully! Please login."
+          }
         });
       }
 
     } catch (err) {
       console.error("Registration error:", err);
-      
-      
+
       if (err.response) {
-        
-        console.log('Error response data:', err.response.data);
-        console.log('Error response status:', err.response.status);
-        
-        if (err.response.status === 400) {
-          // Handle validation errors from Django
-          const errorData = err.response.data;
-          
-          if (errorData.email) {
-            setError(Array.isArray(errorData.email) ? errorData.email[0] : errorData.email);
-          } else if (errorData.password) {
-            setError(Array.isArray(errorData.password) ? errorData.password[0] : errorData.password);
-          } else if (errorData.non_field_errors) {
-            setError(Array.isArray(errorData.non_field_errors) ? errorData.non_field_errors[0] : errorData.non_field_errors);
-          } else if (errorData.error) {
-            setError(errorData.error);
-          } else if (typeof errorData === 'string') {
-            setError(errorData);
-          } else {
-            setError("Registration failed. Please check your information.");
-          }
-        } else if (err.response.status === 409) {
+        const errorData = err.response.data;
+
+        if (err.response.status === 409) {
           setError("Email already exists. Please use a different email or login.");
+        } else if (errorData?.email) {
+          setError(Array.isArray(errorData.email) ? errorData.email[0] : errorData.email);
+        } else if (errorData?.password) {
+          setError(Array.isArray(errorData.password) ? errorData.password[0] : errorData.password);
+        } else if (errorData?.non_field_errors) {
+          setError(Array.isArray(errorData.non_field_errors) ? errorData.non_field_errors[0] : errorData.non_field_errors);
+        } else if (errorData?.error) {
+          setError(errorData.error);
+        } else if (typeof errorData === 'string') {
+          setError(errorData);
         } else {
-          setError(`Server error (${err.response.status}). Please try again.`);
+          setError("Registration failed. Please check your information.");
         }
       } else if (err.request) {
-        
         setError("Cannot connect to server. Make sure Django is running on port 8000.");
       } else {
-        
         setError("An error occurred. Please try again.");
       }
     } finally {
@@ -154,16 +134,7 @@ function Register() {
             <h2>Create Account</h2>
 
             {error && (
-              <div className="error-message" style={{
-                backgroundColor: '#ffebee',
-                color: '#c62828',
-                padding: '12px',
-                borderRadius: '8px',
-                marginBottom: '20px',
-                textAlign: 'center',
-                fontSize: '14px',
-                border: '1px solid #ffcdd2'
-              }}>
+              <div className="error-message">
                 <i className="fa-solid fa-exclamation-circle" style={{ marginRight: '8px' }}></i>
                 {error}
               </div>
@@ -223,8 +194,8 @@ function Register() {
               <i className="fa-solid fa-lock"></i>
             </div>
 
-            <button 
-              type="submit" 
+            <button
+              type="submit"
               className="signup-btn"
               disabled={loading}
               style={{

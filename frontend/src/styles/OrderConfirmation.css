@@ -1,0 +1,235 @@
+/* ── PAGE ─────────────────────────────────────────── */
+.confirm-page {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #fdf0f3 0%, #fff5f8 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+  box-sizing: border-box;
+}
+
+/* ── CARD ─────────────────────────────────────────── */
+.confirm-card {
+  background: #fff;
+  border-radius: 24px;
+  padding: 48px 40px;
+  max-width: 520px;
+  width: 100%;
+  text-align: center;
+  box-shadow: 0 8px 40px rgba(192, 96, 122, 0.12);
+}
+
+/* ── ICON ─────────────────────────────────────────── */
+.confirm-icon {
+  font-size: 64px;
+  margin-bottom: 20px;
+  animation: bounce 0.6s ease;
+}
+
+@keyframes bounce {
+  0%   { transform: scale(0); }
+  60%  { transform: scale(1.2); }
+  100% { transform: scale(1); }
+}
+
+/* ── TITLE ────────────────────────────────────────── */
+.confirm-title {
+  font-size: 32px;
+  font-weight: 800;
+  color: #333;
+  margin: 0 0 10px;
+}
+
+.confirm-subtitle {
+  font-size: 15px;
+  color: #888;
+  margin: 0 0 28px;
+  line-height: 1.6;
+}
+
+/* ── ORDER ID ─────────────────────────────────────── */
+.confirm-order-id {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #fdf0f3;
+  border-radius: 12px;
+  padding: 14px 20px;
+  margin-bottom: 24px;
+}
+
+.confirm-order-id span {
+  font-size: 14px;
+  color: #888;
+}
+
+.confirm-order-id strong {
+  font-size: 16px;
+  font-weight: 700;
+  color: #c0607a;
+}
+
+/* ── ITEMS ────────────────────────────────────────── */
+.confirm-items {
+  text-align: left;
+  margin-bottom: 20px;
+}
+
+.confirm-items h4 {
+  font-size: 14px;
+  font-weight: 700;
+  color: #555;
+  margin: 0 0 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.confirm-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+  border-bottom: 1px solid #fafafa;
+  font-size: 14px;
+}
+
+.confirm-item:last-child {
+  border-bottom: none;
+}
+
+.confirm-item-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.confirm-item-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #f4c2ce;
+  flex-shrink: 0;
+}
+
+.confirm-item-name {
+  color: #444;
+  font-weight: 500;
+}
+
+.confirm-item-qty {
+  background: #f5f5f5;
+  color: #888;
+  padding: 1px 7px;
+  border-radius: 10px;
+  font-size: 12px;
+}
+
+.confirm-item-price {
+  font-weight: 600;
+  color: #333;
+}
+
+/* ── TOTAL ────────────────────────────────────────── */
+.confirm-total {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 20px;
+  background: #fdf0f3;
+  border-radius: 12px;
+  margin-bottom: 20px;
+}
+
+.confirm-total span:first-child {
+  font-size: 15px;
+  color: #666;
+  font-weight: 500;
+}
+
+.confirm-total-amount {
+  font-size: 22px;
+  font-weight: 800;
+  color: #c0607a;
+}
+
+/* ── STATUS ───────────────────────────────────────── */
+.confirm-status {
+  background: #fff8e1;
+  color: #856404;
+  padding: 12px 16px;
+  border-radius: 10px;
+  font-size: 13px;
+  margin-bottom: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.confirm-status i {
+  color: #f59e0b;
+}
+
+/* ── ACTIONS ──────────────────────────────────────── */
+.confirm-actions {
+  display: flex;
+  gap: 12px;
+}
+
+.confirm-btn-primary {
+  flex: 1;
+  padding: 14px;
+  background: #c0607a;
+  color: #fff;
+  border-radius: 12px;
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: background 0.2s, transform 0.15s;
+}
+
+.confirm-btn-primary:hover {
+  background: #a04060;
+  transform: translateY(-2px);
+}
+
+.confirm-btn-secondary {
+  flex: 1;
+  padding: 14px;
+  background: #fdf0f3;
+  color: #c0607a;
+  border-radius: 12px;
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: background 0.2s, transform 0.15s;
+}
+
+.confirm-btn-secondary:hover {
+  background: #f4c2ce;
+  transform: translateY(-2px);
+}
+
+/* ── RESPONSIVE ───────────────────────────────────── */
+@media (max-width: 480px) {
+  .confirm-card {
+    padding: 32px 20px;
+  }
+
+  .confirm-title {
+    font-size: 26px;
+  }
+
+  .confirm-actions {
+    flex-direction: column;
+  }
+}

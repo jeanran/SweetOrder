@@ -1,33 +1,51 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import api from '../services/api';
+import '../styles/Orders.css';
 
 function Orders() {
-  const navigate              = useNavigate();
-  const [orders, setOrders]   = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError]     = useState('');
+  const navigate                        = useNavigate();
+  const dropdownRef                     = useRef(null);
+  const [orders, setOrders]             = useState([]);
+  const [loading, setLoading]           = useState(true);
+  const [error, setError]               = useState('');
+  const [user, setUser]                 = useState(null);
+  const [scrolled, setScrolled]         = useState(false);
+  const [dropdownOpen, setDropdownOpen] = useState(false);
 
   useEffect(() => {
-    document.body.classList.add('page-loaded');     
+    document.body.classList.add('page-loaded');
 
-    const storedUser = localStorage.getItem('user');
-    if (!storedUser) { navigate('/login'); return; }
+    const stored = localStorage.getItem('user');
+    if (!stored) { navigate('/login'); return; }
+    setUser(JSON.parse(stored));
+
+    const handleScroll = () => setScrolled(window.scrollY > 50);
+    window.addEventListener('scroll', handleScroll);
+
+    const handleClickOutside = (e) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
+        setDropdownOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
 
     fetchOrders();
 
-    return () => document.body.classList.remove('page-loaded');
+    return () => {
+      document.body.classList.remove('page-loaded');
+      window.removeEventListener('scroll', handleScroll);
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
   }, [navigate]);
 
   const fetchOrders = async () => {
-    const storedUser = localStorage.getItem('user');
-    if (!storedUser) return setError('Please login.');
-
-    const userId = JSON.parse(storedUser).user_id;
-
+    const stored = localStorage.getItem('user');
+    if (!stored) return setError('Please login.');
+    const userId = JSON.parse(stored).user_id;
     try {
       const response = await api.get(`/orders/?user_id=${userId}`);
-      const data = Array.isArray(response.data)
+      const data     = Array.isArray(response.data)
         ? response.data
         : response.data.results || [];
       setOrders(data);
@@ -37,6 +55,18 @@ function Orders() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleLogout = async () => {
+    try { await api.post('/auth/logout/'); } catch (e) {}
+    localStorage.removeItem('user');
+    localStorage.removeItem('userId');
+    navigate('/login');
+  };
+
+  const getInitials = (name) => {
+    if (!name) return '?';
+    return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
   };
 
   const statusConfig = (status) => {
@@ -51,230 +81,170 @@ function Orders() {
   };
 
   return (
-    <div style={{ minHeight: '100vh', background: '#fdf6f8' }}>
+    <div className="orders-page">
 
-      {/* ✅ NAVBAR */}
-      <header style={{
-        background: '#fff', padding: '14px 28px',
-        display: 'flex', alignItems: 'center',
-        justifyContent: 'space-between',
-        boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
-        position: 'sticky', top: 0, zIndex: 100
-      }}>
-        <button onClick={() => navigate(-1)} style={{
-          background: 'none', border: 'none', cursor: 'pointer',
-          display: 'flex', alignItems: 'center', gap: '6px',
-          color: '#c0607a', fontSize: '14px', fontWeight: '500'
-        }}>
-          <i className="fa-solid fa-arrow-left"></i> Back
-        </button>
-        <span style={{ fontWeight: '600', color: '#333', fontSize: '16px' }}>
-          My Orders
-        </span>
-        <Link to="/cart" style={{ color: '#c0607a', fontSize: '18px' }}>
-          <i className="fa-solid fa-cart-shopping"></i>
-        </Link>
+      {/* ── NAVBAR ───────────────────────────────────── */}
+      <header className={`navbar ${scrolled ? 'scrolled' : ''}`}>
+        <div className="container nav-container">
+          <div className="logo">
+            <img className="logo-img" src="/assets/logos.png" alt="SweetOrder logo" />
+          </div>
+          <nav className="nav-links">
+            <Link to="/homepage"     className="nav-link">Home</Link>
+            <Link to="/about"        className="nav-link">About</Link>
+            <Link to="/products"     className="nav-link">Cakes</Link>
+            <Link to="/testimonials" className="nav-link">Testimonials</Link>
+            <Link to="/contacts"     className="nav-link">Contacts</Link>
+          </nav>
+          <div className="nav-right">
+            <Link to="/cart">
+              <img className="cart-icon" src="/assets/cart.png" alt="Cart" />
+            </Link>
+            {user && (
+              <div className="nav-profile-wrapper" ref={dropdownRef}>
+                <button
+                  className="nav-profile-avatar"
+                  onClick={() => setDropdownOpen(p => !p)}
+                >
+                  {getInitials(user.name)}
+                </button>
+                {dropdownOpen && (
+                  <div className="profile-dropdown">
+                    <div className="dropdown-header">
+                      <div className="dropdown-avatar">{getInitials(user.name)}</div>
+                      <div>
+                        <p className="dropdown-name">{user.name}</p>
+                        <p className="dropdown-email">{user.email}</p>
+                      </div>
+                    </div>
+                    <hr className="dropdown-divider" />
+                    <Link to="/profile"  className="dropdown-item" onClick={() => setDropdownOpen(false)}>
+                      <i className="fa-solid fa-user"></i> My Profile
+                    </Link>
+                    <Link to="/orders"   className="dropdown-item" onClick={() => setDropdownOpen(false)}>
+                      <i className="fa-solid fa-box"></i> My Orders
+                    </Link>
+                    <Link to="/settings" className="dropdown-item" onClick={() => setDropdownOpen(false)}>
+                      <i className="fa-solid fa-gear"></i> Settings
+                    </Link>
+                    <hr className="dropdown-divider" />
+                    <button className="dropdown-item dropdown-logout" onClick={handleLogout}>
+                      <i className="fa-solid fa-right-from-bracket"></i> Logout
+                    </button>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        </div>
       </header>
 
-      {/* RESPONSIVE CONTAINER */}
-      <div style={{
-        maxWidth: '900px',
-        margin: '0 auto',
-        padding: '32px 16px',
-        boxSizing: 'border-box',
-        width: '100%',
-      }}>
+      {/* ── PAGE TITLE BANNER ────────────────────────── */}
+      <div className="orders-title-banner">
+        <div className="orders-title-inner">
+          <i className="fa-solid fa-box orders-title-icon"></i>
+          <div>
+            <h1 className="orders-title-text">MY ORDERS</h1>
+            <p className="orders-title-sub">Track and review all your sweet purchases</p>
+          </div>
+        </div>
+      </div>
 
-        {/* Summary bar */}
-        {!loading && !error && orders.length > 0 && (
-          <div style={{
-            display: 'flex', alignItems: 'center',
-            justifyContent: 'space-between',
-            marginBottom: '24px'
-          }}>
-            <h2 style={{ margin: 0, color: '#333', fontSize: '20px' }}>
-              My Orders
-            </h2>
-            <span style={{
-              background: '#f4c2ce', color: '#c0607a',
-              padding: '4px 14px', borderRadius: '20px',
-              fontSize: '13px', fontWeight: '600'
-            }}>
+      {/* ── CONTENT ──────────────────────────────────── */}
+      <div className="orders-content">
+
+        {/* Sub heading with count */}
+        <div className="orders-heading">
+          {!loading && !error && orders.length > 0 && (
+            <span className="orders-badge">
               {orders.length} {orders.length === 1 ? 'Order' : 'Orders'}
             </span>
-          </div>
-        )}
+          )}
+        </div>
 
         {/* Loading */}
         {loading && (
-          <div style={{ textAlign: 'center', padding: '80px 20px', color: '#888' }}>
-            <i className="fa-solid fa-spinner fa-spin"
-               style={{ fontSize: '2rem', color: '#c0607a', marginBottom: '16px', display: 'block' }}></i>
-            <p style={{ margin: 0 }}>Loading your orders...</p>
+          <div className="orders-state">
+            <i className="fa-solid fa-spinner fa-spin fa-2x"></i>
+            <p>Loading your orders...</p>
           </div>
         )}
 
         {/* Error */}
         {!loading && error && (
-          <div style={{
-            background: '#ffebee', color: '#c62828', padding: '20px',
-            borderRadius: '12px', textAlign: 'center'
-          }}>
-            <i className="fa-solid fa-exclamation-circle"
-               style={{ marginRight: '8px' }}></i>
-            {error}
+          <div className="orders-state orders-state-error">
+            <i className="fa-solid fa-exclamation-circle fa-2x"></i>
+            <p>{error}</p>
           </div>
         )}
 
         {/* Empty */}
         {!loading && !error && orders.length === 0 && (
-          <div style={{ textAlign: 'center', padding: '80px 20px', color: '#888' }}>
-            <i className="fa-solid fa-box-open"
-               style={{ fontSize: '3rem', color: '#f4c2ce',
-                        marginBottom: '16px', display: 'block' }}></i>
-            <h3 style={{ margin: '0 0 8px', color: '#555' }}>No orders yet</h3>
-            <p style={{ margin: '0 0 20px', fontSize: '14px' }}>
-              Looks like you haven't ordered anything yet.
-            </p>
-            <button
-              onClick={() => navigate('/products')}
-              style={{
-                padding: '12px 28px', background: '#c0607a', color: '#fff',
-                border: 'none', borderRadius: '24px', cursor: 'pointer',
-                fontSize: '14px', fontWeight: '600'
-              }}
-            >
-              <i className="fa-solid fa-cake-candles"
-                 style={{ marginRight: '8px' }}></i>
-              Shop Now
+          <div className="orders-empty">
+            <i className="fa-solid fa-box-open"></i>
+            <h3>No orders yet</h3>
+            <p>Looks like you haven't ordered anything yet.</p>
+            <button className="orders-shop-btn" onClick={() => navigate('/products')}>
+              <i className="fa-solid fa-cake-candles"></i> Shop Now
             </button>
           </div>
         )}
 
-        {/* RESPONSIVE ORDER CARDS GRID */}
+        {/* Order Cards */}
         {!loading && !error && orders.length > 0 && (
-          <div style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fill, minmax(380px, 1fr))',
-            gap: '20px',
-          }}>
+          <div className="orders-grid">
             {orders.map(order => {
               const sc = statusConfig(order.status);
               return (
-                <div key={order.order_id} style={{
-                  background: '#fff',
-                  borderRadius: '16px',
-                  boxShadow: '0 2px 16px rgba(0,0,0,0.07)',
-                  overflow: 'hidden',
-                  display: 'flex',
-                  flexDirection: 'column',
-                }}>
+                <div key={order.order_id} className="order-card">
 
                   {/* Card Header */}
-                  <div style={{
-                    padding: '16px 20px',
-                    borderBottom: '1px solid #f5f5f5',
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
-                  }}>
+                  <div className="order-card-header">
                     <div>
-                      <p style={{ margin: 0, fontWeight: '700',
-                                  color: '#333', fontSize: '15px' }}>
-                        Order #{order.order_id}
-                      </p>
-                      <p style={{ margin: '3px 0 0', fontSize: '12px', color: '#aaa' }}>
-                        <i className="fa-regular fa-calendar"
-                           style={{ marginRight: '4px' }}></i>
+                      <p className="order-id">Order #{order.order_id}</p>
+                      <p className="order-date">
+                        <i className="fa-regular fa-calendar"></i>
                         {new Date(order.order_date).toLocaleDateString('en-PH', {
                           year: 'numeric', month: 'long', day: 'numeric'
                         })}
                       </p>
                     </div>
-                    {/* Status Badge */}
-                    <span style={{
-                      padding: '5px 12px', borderRadius: '20px',
-                      fontSize: '12px', fontWeight: '600',
-                      background: sc.bg, color: sc.color,
-                      textTransform: 'capitalize',
-                      display: 'flex', alignItems: 'center', gap: '5px'
-                    }}>
+                    <span className="order-status" style={{ background: sc.bg, color: sc.color }}>
                       <i className={`fa-solid ${sc.icon}`}></i>
                       {order.status}
                     </span>
                   </div>
 
                   {/* Order Items */}
-                  <div style={{ padding: '12px 20px', flex: 1 }}>
+                  <div className="order-items">
                     {order.order_details?.length > 0 ? (
                       order.order_details.map(item => (
-                        <div key={item.order_detail_id} style={{
-                          display: 'flex', justifyContent: 'space-between',
-                          alignItems: 'center',
-                          padding: '8px 0',
-                          borderBottom: '1px solid #fafafa',
-                          fontSize: '14px', color: '#555'
-                        }}>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                            <div style={{
-                              width: '8px', height: '8px', borderRadius: '50%',
-                              background: '#f4c2ce', flexShrink: 0
-                            }} />
-                            <span>{item.product_name}</span>
-                            <span style={{
-                              background: '#f5f5f5', color: '#888',
-                              padding: '1px 7px', borderRadius: '10px',
-                              fontSize: '12px'
-                            }}>
-                              ×{item.quantity}
-                            </span>
+                        <div key={item.order_detail_id} className="order-item">
+                          <div className="order-item-left">
+                            <span className="order-item-dot"></span>
+                            <span className="order-item-name">{item.product_name}</span>
+                            <span className="order-item-qty">x{item.quantity}</span>
                           </div>
-                          <span style={{ fontWeight: '500', color: '#333' }}>
-                            ₱{parseFloat(item.subtotal).toFixed(2)}
+                          <span className="order-item-price">
+                            P{parseFloat(item.subtotal).toFixed(2)}
                           </span>
                         </div>
                       ))
                     ) : (
-                      <p style={{ color: '#aaa', fontSize: '13px', margin: '8px 0' }}>
-                        No items found.
-                      </p>
+                      <p className="order-no-items">No items found.</p>
                     )}
                   </div>
 
                   {/* Card Footer */}
-                  <div style={{
-                    padding: '14px 20px',
-                    background: '#fdf6f8',
-                    borderTop: '1px solid #f5f5f5',
-                  }}>
-                    {/* Delivery address */}
-                    <p style={{
-                      margin: '0 0 10px', fontSize: '12px',
-                      color: '#888', display: 'flex',
-                      alignItems: 'flex-start', gap: '6px'
-                    }}>
-                      <i className="fa-solid fa-location-dot"
-                         style={{ color: '#c0607a', marginTop: '2px', flexShrink: 0 }}></i>
-                      <span style={{
-                        overflow: 'hidden', textOverflow: 'ellipsis',
-                        whiteSpace: 'nowrap', maxWidth: '280px'
-                      }}>
-                        {order.delivery_address}
-                      </span>
+                  <div className="order-card-footer">
+                    <p className="order-address">
+                      <i className="fa-solid fa-location-dot"></i>
+                      <span>{order.delivery_address}</span>
                     </p>
-
-                    {/* Total */}
-                    <div style={{
-                      display: 'flex', justifyContent: 'space-between',
-                      alignItems: 'center'
-                    }}>
-                      <span style={{ fontSize: '13px', color: '#888' }}>
-                        Total Amount
-                      </span>
-                      <span style={{
-                        fontWeight: '700', color: '#c0607a', fontSize: '16px'
-                      }}>
-                        ₱{parseFloat(order.total_amount).toFixed(2)}
+                    <div className="order-total-row">
+                      <span>Total Amount</span>
+                      <span className="order-total">
+                        P{parseFloat(order.total_amount).toFixed(2)}
                       </span>
                     </div>
                   </div>
@@ -285,8 +255,6 @@ function Orders() {
           </div>
         )}
 
-        {/* Bottom padding for mobile */}
-        <div style={{ height: '40px' }} />
       </div>
     </div>
   );

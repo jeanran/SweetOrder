@@ -14,6 +14,8 @@ import Contacts from './components/Contacts';
 import Profile from './components/Profile';
 import Orders from './components/Orders';
 import Settings from './components/Settings';
+import OrderConfirmation from './components/OrderConfirmation';
+
 
 import './App.css';
 
@@ -36,6 +38,7 @@ function App() {
           <Route path="/register" element={<Register />} />
           <Route path="/cart" element={<Cart />} />
           <Route path="/checkout" element={<Checkout />} />
+          <Route path="/order-confirmation" element={<OrderConfirmation />} />
           <Route path="/profile" element={<Profile />} />
           <Route path="/orders" element={<Orders />} />
           <Route path="/settings" element={<Settings />} />

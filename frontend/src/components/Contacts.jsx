@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { NavLink } from 'react-router-dom';
 import '../styles/Contacts.css';
 
 function Contacts() {
@@ -88,15 +88,17 @@ function Contacts() {
           </div>
 
           <nav className="nav-links">
-            <Link to="/homepage" className="nav-link">Home</Link>
-            <Link to="/about" className="nav-link">About</Link>
-            <Link to="/products" className="nav-link">Cakes</Link>
-            <Link to="/testimonials" className="nav-link">Testimonials</Link>
-            <Link to="/contacts" className="nav-link">Contacts</Link>
+            <NavLink to="/homepage" className="nav-link">Home</NavLink>
+            <NavLink to="/about" className="nav-link">About</NavLink>
+            <NavLink to="/products" className="nav-link">Cakes</NavLink>
+            <NavLink to="/testimonials" className="nav-link">Testimonials</NavLink>
+            <NavLink to="/contacts" className="nav-link">Contacts</NavLink>
           </nav>
 
           <div className="nav-right">
-            <Link to="/cart"><img className="cart-icon" src="/assets/cart.png" alt="cart icon" /></Link>
+            <NavLink to="/cart">
+              <img className="cart-icon" src="/assets/cart.png" alt="cart icon" />
+            </NavLink>
           </div>
         </div>
       </header>

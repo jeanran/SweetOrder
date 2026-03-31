@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { NavLink } from 'react-router-dom';
 import '../styles/About.css';
 
 function About() {
@@ -26,16 +26,16 @@ function About() {
             <img className="logo-img" src="/assets/logos.png" alt="SweetOrder logo" />
           </div>
           <nav className="nav-links">
-            <Link to="/homepage"     className="nav-link">Home</Link>
-            <Link to="/about"        className="nav-link">About</Link>
-            <Link to="/products"     className="nav-link">Cakes</Link>
-            <Link to="/testimonials" className="nav-link">Testimonials</Link>
-            <Link to="/contacts"     className="nav-link">Contacts</Link>
+            <NavLink to="/homepage"     className="nav-link">Home</NavLink>
+            <NavLink to="/about"        className="nav-link">About</NavLink>
+            <NavLink to="/products"     className="nav-link">Cakes</NavLink>
+            <NavLink to="/testimonials" className="nav-link">Testimonials</NavLink>
+            <NavLink to="/contacts"     className="nav-link">Contacts</NavLink>
           </nav>
           <div className="nav-right">
-            <Link to="/cart">
+            <NavLink to="/cart">
               <img className="cart-icon" src="/assets/cart.png" alt="Cart" />
-            </Link>
+            </NavLink>
           </div>
         </div>
       </header>
@@ -56,7 +56,7 @@ function About() {
               ingredients. Whether it's birthdays, weddings, or special celebrations,
               our bakery creates memorable desserts that make every moment sweeter.
             </p>
-            <Link to="/products" className="about-btn">Explore Cakes</Link>
+            <NavLink to="/products" className="about-btn">Explore Cakes</NavLink>
           </div>
         </div>
 
@@ -87,7 +87,7 @@ function About() {
               our bakers will create the perfect cake for your celebration.
               Birthdays, weddings, anniversaries, and more!
             </p>
-            <Link to="/contacts" className="custom-btn">Request Custom Cake</Link>
+            <NavLink to="/contacts" className="custom-btn">Request Custom Cake</NavLink>
           </div>
           <div className="custom-image">
             <img src="/assets/about-us-image.jpg" alt="Custom Cake" />
@@ -109,11 +109,11 @@ function About() {
 
           <div className="footer-links">
             <h4>Quick Links</h4>
-            <Link to="/homepage">Home</Link>
-            <Link to="/about">About</Link>
-            <Link to="/products">Cakes</Link>
-            <Link to="/testimonials">Testimonials</Link>
-            <Link to="/contacts">Contact</Link>
+            <NavLink to="/homepage">Home</NavLink>
+            <NavLink to="/about">About</NavLink>
+            <NavLink to="/products">Cakes</NavLink>
+            <NavLink to="/testimonials">Testimonials</NavLink>
+            <NavLink to="/contacts">Contact</NavLink>
           </div>
 
           <div className="footer-contact">

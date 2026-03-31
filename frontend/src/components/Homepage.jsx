@@ -1,24 +1,29 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { NavLink, useNavigate } from 'react-router-dom';
 import api from '../services/api';
 import '../styles/Homepage.css';
 
 function Homepage() {
+  const navigate                        = useNavigate();
+  const dropdownRef                     = useRef(null);
   const [scrolled, setScrolled]         = useState(false);
   const [user, setUser]                 = useState(null);
   const [dropdownOpen, setDropdownOpen] = useState(false);
-  const dropdownRef                     = useRef(null);
-  const navigate                        = useNavigate();
 
   useEffect(() => {
-    document.body.classList.add('page-loaded');
+    const link = document.createElement('link');
+    link.href = 'https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;800&display=swap';
+    link.rel = 'stylesheet';
+    document.head.appendChild(link);
 
-    // load user from localStorage
+    document.body.classList.add('page-loaded');
+    document.body.style.overflow = 'hidden'; 
+    document.body.classList.add('homepage');  
+
     const stored = localStorage.getItem('user');
     if (stored) {
       const parsedUser = JSON.parse(stored);
       setUser(parsedUser);
-      // ensure userId is also stored
       if (!localStorage.getItem('userId')) {
         localStorage.setItem('userId', parsedUser.user_id);
       }
@@ -27,7 +32,6 @@ function Homepage() {
     const handleScroll = () => setScrolled(window.scrollY > 50);
     window.addEventListener('scroll', handleScroll);
 
-    
     const handleClickOutside = (e) => {
       if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
         setDropdownOpen(false);
@@ -37,6 +41,8 @@ function Homepage() {
 
     return () => {
       document.body.classList.remove('page-loaded');
+      document.body.style.overflow = ''; 
+      document.body.classList.remove('homepage');  
       window.removeEventListener('scroll', handleScroll);
       document.removeEventListener('mousedown', handleClickOutside);
     };
@@ -44,32 +50,26 @@ function Homepage() {
 
   const handleLogout = async () => {
     try {
-      await api.post('/auth/logout/', {}, { withCredentials: true });
+      await api.post('/auth/logout/');
     } catch (err) {
       console.error('Logout error:', err);
     } finally {
       localStorage.removeItem('user');
       localStorage.removeItem('userId');
-      setUser(null); 
+      setUser(null);
       setDropdownOpen(false);
       navigate('/login');
     }
   };
 
-  
   const getInitials = (name) => {
     if (!name) return '?';
-    return name
-      .split(' ')
-      .map(n => n[0])
-      .join('')
-      .toUpperCase()
-      .slice(0, 2);
+    return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
   };
 
   return (
     <>
-      {/* NAVBAR */}
+      {/* ── NAVBAR ─────────────────────────────────── */}
       <header className={`navbar ${scrolled ? 'scrolled' : ''}`}>
         <div className="container nav-container">
 
@@ -78,37 +78,30 @@ function Homepage() {
           </div>
 
           <nav className="nav-links">
-            <Link to="/homepage" className="nav-link">Home</Link>
-            <Link to="/about" className="nav-link">About</Link>
-            <Link to="/products" className="nav-link">Cakes</Link>
-            <Link to="/testimonials" className="nav-link">Testimonials</Link>
-            <Link to="/contacts" className="nav-link">Contacts</Link>
+            <NavLink to="/homepage"     className="nav-link">Home</NavLink>
+            <NavLink to="/about"        className="nav-link">About</NavLink>
+            <NavLink to="/products"     className="nav-link">Cakes</NavLink>
+            <NavLink to="/testimonials" className="nav-link">Testimonials</NavLink>
+            <NavLink to="/contacts"     className="nav-link">Contacts</NavLink>
           </nav>
 
           <div className="nav-right">
-            {/* CART ICON */}
-            <Link to="/cart">
+            <NavLink to="/cart">
               <img className="cart-icon" src="/assets/cart.png" alt="Cart" />
-            </Link>
+            </NavLink>
 
-            {/* PROFILE DROPDOWN */}
             {user ? (
-              <div className="profile-wrapper" ref={dropdownRef}>
-
-                {/* Avatar button */}
+              <div className="nav-profile-wrapper" ref={dropdownRef}>
                 <button
-                  className="profile-avatar"
+                  className="nav-profile-avatar"
                   onClick={() => setDropdownOpen(prev => !prev)}
                   title={user.name}
                 >
                   {getInitials(user.name)}
                 </button>
 
-                {/* Dropdown menu */}
                 {dropdownOpen && (
                   <div className="profile-dropdown">
-
-                    {/* User info header */}
                     <div className="dropdown-header">
                       <div className="dropdown-avatar">{getInitials(user.name)}</div>
                       <div>
@@ -119,75 +112,54 @@ function Homepage() {
 
                     <hr className="dropdown-divider" />
 
-                    <Link
-                      to="/profile"
-                      className="dropdown-item"
-                      onClick={() => setDropdownOpen(false)}
-                    >
-                      <i className="fa-solid fa-user"></i> My Profile
-                    </Link>
-
-                    <Link
-                      to="/orders"
-                      className="dropdown-item"
-                      onClick={() => setDropdownOpen(false)}
-                    >
-                      <i className="fa-solid fa-box"></i> My Orders
-                    </Link>
-
-                    <Link
-                      to="/settings"
-                      className="dropdown-item"
-                      onClick={() => setDropdownOpen(false)}
-                    >
-                      <i className="fa-solid fa-gear"></i> Settings
-                    </Link>
+                    <NavLink to="/profile"  className="dropdown-item" onClick={() => setDropdownOpen(false)}>
+                      <i className="fa-solid fa-user" /> My Profile
+                    </NavLink>
+                    <NavLink to="/orders"   className="dropdown-item" onClick={() => setDropdownOpen(false)}>
+                      <i className="fa-solid fa-box" /> My Orders
+                    </NavLink>
+                    <NavLink to="/settings" className="dropdown-item" onClick={() => setDropdownOpen(false)}>
+                      <i className="fa-solid fa-gear" /> Settings
+                    </NavLink>
 
                     <hr className="dropdown-divider" />
 
-                    <button
-                      className="dropdown-item dropdown-logout"
-                      onClick={handleLogout}
-                    >
-                      <i className="fa-solid fa-right-from-bracket"></i> Logout
+                    <button className="dropdown-item dropdown-logout" onClick={handleLogout}>
+                      <i className="fa-solid fa-right-from-bracket" /> Logout
                     </button>
-
                   </div>
                 )}
               </div>
-
             ) : (
-              
-              <Link to="/login" className="nav-login-btn">
-                Login
-              </Link>
+              <NavLink to="/login" className="nav-login-btn">Login</NavLink>
             )}
-
           </div>
+
         </div>
       </header>
 
-      {/* HERO SECTION */}
+      {/* ── HERO ───────────────────────────────────── */}
       <section className="hero">
-        <div className="container hero-container">
+        <div className="hero-bg">
+          <div className="hero-content">
+            <div className="hero-text-card">
 
-          <div className="hero-text">
-            <h1>Freshly Baked Cakes</h1>
-            <h2>Made With Love</h2>
-            <p>Order delicious cakes for birthdays, weddings, and special occasions.</p>
+              <div className="hero-left">
+                <h1>Freshly Baked Cakes</h1>
+                <h2>Made With Love</h2>
+                <p>Order delicious cakes for birthdays, weddings, and special occasions.</p>
+                <div className="hero-buttons">
+                  <NavLink to="/order" className="order-btn-home">Order Now</NavLink>
+                  <NavLink to="/products" className="view-btn-home">View Cakes</NavLink>
+                </div>
+              </div>
 
-            <div className="hero-buttons">
-              <Link to="/products">
-                <button className="order-btn">Order Now</button>
-              </Link>
-              
+              <div className="home-cake-image">
+                <img src="/assets/cake.png" alt="Freshly baked cake" />
+              </div>
+
             </div>
           </div>
-
-          <div className="hero-image">
-            <img src="/assets/cake.png" alt="Cake" />
-          </div>
-
         </div>
       </section>
     </>
